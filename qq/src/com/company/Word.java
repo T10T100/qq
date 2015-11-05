@@ -1,5 +1,7 @@
 package com.company;
 
+import com.sun.xml.internal.fastinfoset.util.CharArray;
+
 /**
  * Created by Operator on 04.11.2015.
  */
@@ -7,24 +9,57 @@ public class Word {
     private String name;
     private String template;
 
+
+    public Word (Word word)
+    {
+        this.name = new String(word.getName());
+        this.template = new String(word.template);
+    }
     public Word (String name, String template)
     {
-        this.name = new String(name);
-        this.template = new String(template);
+        this.name = name;
+        this.template = template;
+    }
+    public Word (String... args)
+    {
+        this.name = args[0];
+        this.template = args[1];
     }
 
     public Word (String template)
     {
-        this.name = new String("[name]");
-        this.template = new String(template);
+        this.name = new String(" ");
+        this.template = template;
     }
 
     public Word ()
     {
-        this.name = new String("[name]");
-        this.template = new String("[word]");
+        this.name = new String(" ");
+        this.template = new String(" ");
     }
 
+
+
+
+
+
+    public char[] toCharArrayOfName ()
+    {
+        return this.name.toCharArray();
+    }
+    public char[] toCharArrayOfTemplate ()
+    {
+        return this.template.toCharArray();
+    }
+
+    public void addToName (String add)
+    {
+        this.name += add;
+    }
+    public void addToTemplate (String add)
+    {
+        this.template += add;
+    }
 
     public void setName (String name)
     {
@@ -53,6 +88,16 @@ public class Word {
     {
         String[] output = {this.name, this.template};
         return output;
+    }
+
+    public int getNameLength ()
+    {
+        return this.name.length();
+    }
+
+    public int getTemplateLength ()
+    {
+        return this.template.length();
     }
 
     public boolean containsKeysInName (DefaultParseKeys... keys)
@@ -95,5 +140,11 @@ public class Word {
         return this.template.contentEquals(name);
     }
 
+
+    @Override
+    public String toString()
+    {
+        return "[" + this.name + "->" + this.template + "];";
+    }
 
 }
