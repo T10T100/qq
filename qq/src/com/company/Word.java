@@ -2,6 +2,8 @@ package com.company;
 
 import com.sun.xml.internal.fastinfoset.util.CharArray;
 
+import java.util.ArrayList;
+
 /**
  * Created by Operator on 04.11.2015.
  */
@@ -12,8 +14,22 @@ public class Word {
 
     public Word (Word word)
     {
-        this.name = new String(word.getName());
-        this.template = new String(word.template);
+        this.name = word.name;
+        this.template = word.template;
+    }
+    public Word (ArrayList<Word> words)
+    {
+        if (words.isEmpty() == false) {
+            this.template = words.remove(0).template;
+        } else {
+            this.name = new String(" ");
+            this.template = new String(" ");
+        }
+        if (words.isEmpty() == false) {
+            this.name = words.remove(0).template;
+        } else {
+            this.name = new String(" ");
+        }
     }
     public Word (String name, String template)
     {
@@ -57,6 +73,14 @@ public class Word {
         this.name += add;
     }
     public void addToTemplate (String add)
+    {
+        this.template += add;
+    }
+    public void addToName (char add)
+    {
+        this.name += add;
+    }
+    public void addToTemplate (char add)
     {
         this.template += add;
     }

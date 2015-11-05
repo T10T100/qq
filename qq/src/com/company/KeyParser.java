@@ -74,20 +74,37 @@ public class KeyParser {
         ArrayList<Word> listOfTemplates = separate(output, '<', '>');
         garbage = listOfTemplates.remove(0);
 
-        ArrayList<Word> list = separateEnum(garbage, ',');
+        ArrayList<Word> keyWordList = separateEnum(garbage, ',');
+        ArrayList<Word> keyAttributesList;
+        String wordTemplate = "";
+        Word word;
+        for (Word key : keyWordList) {
+            keyAttributesList = separateEnum(key, ':');
+            if (keyAttributesList.size() > 1) {
+                word = keyAttributesList.remove(0);
+                key.setName(word.getTemplate());
+                for (Word w : keyAttributesList) {
+                    wordTemplate += w.getTemplate();
+                }
+                key.setTemplate(wordTemplate);
+            } else if (keyAttributesList.isEmpty() == false) {
+                word = keyAttributesList.remove(0);
+                key.setTemplate(word.getTemplate());
+            }
+        }
 
 
 
         LinkedList<Word> templates = new LinkedList<>();
 
         for (Word t : listOfTemplates) {
-            templates.add(new Word(extractName(t, '[', ']')));
+            templates.add(new Word(separateEnum(t, ':')));
         }
 
         int i = 0;
-        String[] outCollection = new String[list.size() + listOfTemplates.size() + 1];
+        String[] outCollection = new String[keyWordList.size() + listOfTemplates.size() + 1];
         String name = "";
-        for (Word s : list) {
+        for (Word s : keyWordList) {
             name = concatTemplates(s + additionString, templates);
             if (s.containsKeyInTemplate(DefaultParseKeys.WNO_DIGITS) == true) {
                 outCollection[i++] = new String(removeDigits(name));
