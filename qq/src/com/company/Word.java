@@ -16,6 +16,11 @@ public class Word {
     ArrayList<String> args;
     String name;
     String value;
+    public Word (String string, char splitter)
+    {
+        this.value = string;
+        this.splitValueAndSet(splitter);
+    }
     public Word (ArrayList<Word> words)
     {
         if (words.isEmpty() == true) {

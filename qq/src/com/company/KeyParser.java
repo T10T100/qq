@@ -74,19 +74,30 @@ public class KeyParser {
 
     public ArrayList<String> parseToDefault (PathComparator comparator, String in, String... args)
     {
-        String[] outputCollection;
-        Word word = new Word(in);
-        ArrayList<String> array = word.getArrayFromValueAndSetValueAsFirst('[', ']');
-
-        /*
-        for (String s : array) {
-            if (s == null) {
-                break;
-            }
-            //outputCollection[i++] = s;
+        String garbage = "";
+        ArrayList<String> output = new ArrayList<>();
+        ArrayList<Word> keys = this.setUpKeys(in);
+        if (keys.isEmpty() == false) {
+            garbage = keys.remove(0).getName();
         }
-        */
-        return array;
+        for (Word w : keys) {
+            output.add(new String(w.toString()));
+        }
+        output.add(garbage);
+        //output.add(new String(garbage));
+        return output;
+    }
+
+    private ArrayList<Word> setUpKeys (String input)
+    {
+        Word word = new Word(input);
+        ArrayList<String> array = word.getArrayFromValue('[', ']');
+        ArrayList<Word> words = new ArrayList<>();
+
+        for (String name : array) {
+            words.add(new Word(name, ':'));
+        }
+        return words;
     }
 
     private String[] extractName (String input, char openChar, char closeChar)
