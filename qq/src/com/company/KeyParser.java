@@ -74,7 +74,7 @@ public class KeyParser {
 
     public String[] parseToDefault (PathComparator comparator, String in, String... args)
     {
-        String[] outputCollection = new String[2];
+        String[] outputCollection;
         Word word = new Word(in);
         ArrayList<String> array = word.getArrayFromValueAndSetValueAsFirst('[', ']');
         int i = 0;
@@ -86,9 +86,9 @@ public class KeyParser {
             //outputCollection[i++] = s;
         }
         */
-        if (array.isEmpty() == false) {
-            outputCollection[0] = array.get(1);
-            outputCollection[1] = array.get(1);
+        outputCollection = new String[array.size()];
+        for (String s : array) {
+            outputCollection[i++] = s;
         }
         return outputCollection;
     }

@@ -224,7 +224,6 @@ public class Word {
             } else {
                 bag[copyIndex] += parsing[i];
             }
-            System.out.println(bag[copyIndex]);
         }
         outputCollection.add(0, new String(bag[1]));
         return outputCollection;
@@ -241,7 +240,11 @@ public class Word {
     {
         ArrayList<String> array = new ArrayList<>();
         array.addAll(getArrayFromValue(begin, end));
-        this.value = array.remove(0);
+        if (array.isEmpty() == false) {
+            this.value = array.remove(0);
+        } else {
+            this.value = "[value]";
+        }
         return array;
     }
 
