@@ -50,6 +50,7 @@ public class KeyParser {
         }
 
         comparator.setUp(keys);
+
         output.add("Keys : ");
         for (Word w : keys) {
             output.add(new String(w.toString()));
@@ -64,6 +65,8 @@ public class KeyParser {
         }
         output.add("\nGarbage : ");
         output.add(new String(garbage));
+        output.add("\nSystem : ");
+        output.add(comparator.getSystemInfo());
         return output;
     }
 

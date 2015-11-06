@@ -5,18 +5,17 @@ package com.company;
  */
 public class pathCompareKey {
     private Word key;
-    private int matched;
-    private int watched;
-    private long matchedSize;
-    private long totalSize;
-    private int matchedToArgs;
+    private int matched = 0;
+    private int watched = 0;
+    private long totalSize = 0;
+    private int matchedToArgs = 0;
+
     public pathCompareKey (Word key)
     {
         this.key = key;
-        this.watched = 0;
+        this.watched = 1;
         this.matched = 0;
         this.totalSize = 0;
-        this.matchedSize = 0;
         this.matchedToArgs = 0;
     }
 
@@ -25,7 +24,6 @@ public class pathCompareKey {
         this.watched = 0;
         this.matched = 0;
         this.totalSize = 0;
-        this.matchedSize = 0;
         this.matchedToArgs = 0;
     }
 
@@ -35,7 +33,6 @@ public class pathCompareKey {
         this.totalSize += size;
         if (name.contains(key.getName())) {
             this.matched++;
-            this.matchedSize += size;
             return true;
         }
         return false;
@@ -47,7 +44,7 @@ public class pathCompareKey {
         this.totalSize += size;
         if (value.contains(key.getValue())) {
             this.matched++;
-            this.matchedSize += size;
+            System.out.println(matched);
             return true;
         }
         return false;

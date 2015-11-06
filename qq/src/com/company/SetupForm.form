@@ -30,7 +30,7 @@
       </component>
       <scrollpane id="6cd96">
         <constraints>
-          <grid row="3" column="1" row-span="1" col-span="7" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+          <grid row="3" column="1" row-span="4" col-span="7" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
             <minimum-size width="350" height="80"/>
             <preferred-size width="-1" height="150"/>
             <maximum-size width="-1" height="150"/>
@@ -74,7 +74,7 @@
       </component>
       <scrollpane id="7f66b">
         <constraints>
-          <grid row="5" column="1" row-span="7" col-span="7" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="8" column="1" row-span="4" col-span="7" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="none"/>
@@ -105,38 +105,6 @@
         </constraints>
         <properties>
           <text value="Watch all"/>
-        </properties>
-      </component>
-      <component id="e467e" class="javax.swing.JLabel" binding="labelToMode">
-        <constraints>
-          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Select by cursor"/>
-        </properties>
-      </component>
-      <component id="dca31" class="javax.swing.JCheckBox" binding="watchMode">
-        <constraints>
-          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value=""/>
-        </properties>
-      </component>
-      <component id="6a0eb" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Expand by cursor"/>
-        </properties>
-      </component>
-      <component id="5d00c" class="javax.swing.JCheckBox" binding="expandMode">
-        <constraints>
-          <grid row="4" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value=""/>
         </properties>
       </component>
       <component id="2b56a" class="javax.swing.JButton" binding="resetButton">
@@ -186,6 +154,38 @@
           </component>
         </children>
       </scrollpane>
+      <component id="dca31" class="javax.swing.JCheckBox" binding="watchMode">
+        <constraints>
+          <grid row="7" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value=""/>
+        </properties>
+      </component>
+      <component id="e467e" class="javax.swing.JLabel" binding="labelToMode">
+        <constraints>
+          <grid row="7" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Select by cursor"/>
+        </properties>
+      </component>
+      <component id="6a0eb" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="7" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Expand by cursor"/>
+        </properties>
+      </component>
+      <component id="5d00c" class="javax.swing.JCheckBox" binding="expandMode">
+        <constraints>
+          <grid row="7" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value=""/>
+        </properties>
+      </component>
     </children>
   </grid>
 </form>

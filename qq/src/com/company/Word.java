@@ -21,6 +21,11 @@ public class Word {
         this.value = string;
         this.splitValueAndSet(splitter);
     }
+    public Word (Word word)
+    {
+        this.name = new String(word.name);
+        this.value = new String(word.value);
+    }
     public Word (ArrayList<Word> words)
     {
         if (words.isEmpty() == true) {

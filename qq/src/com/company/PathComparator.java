@@ -16,10 +16,11 @@ import java.util.Set;
 /**
  * Created by k on 28.10.2015.
  */
-public class PathComparator extends ArrayList<pathCompareKey> {
+public class PathComparator {
 
     private long timeStart;
     private long timeEnd;
+    ArrayList<pathCompareKey> keys = new ArrayList<>();
 
     public PathComparator ()
     {
@@ -28,9 +29,9 @@ public class PathComparator extends ArrayList<pathCompareKey> {
 
     public void setUp (ArrayList<Word> words)
     {
-        this.removeAll(this);
+        keys.removeAll(keys);
         for (Word word : words) {
-            this.add(new pathCompareKey(word));
+            keys.add(new pathCompareKey(word));
         }
     }
 
@@ -46,7 +47,7 @@ public class PathComparator extends ArrayList<pathCompareKey> {
 
     public void resetAll ()
     {
-        for (pathCompareKey key : this) {
+        for (pathCompareKey key : keys) {
             //key.clearAll();
         }
     }
@@ -54,18 +55,23 @@ public class PathComparator extends ArrayList<pathCompareKey> {
     public boolean compareAndCollect (File file, boolean logic)
     {
         boolean result = false;
-        for (pathCompareKey key : this) {
+        for (pathCompareKey key : keys) {
             result |= key.compare(file.getName(), file.length(), logic);
         }
         return result;
     }
 
+    public String getSystemInfo ()
+    {
+        FileSystem system = FileSystems.getDefault();
+        return system.toString();
+    }
 
     @Override
     public String toString()
     {
         String output = "";
-        for (pathCompareKey key : this) {
+        for (pathCompareKey key : keys) {
             output += key.toString();
         }
         return output;
