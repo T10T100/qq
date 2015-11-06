@@ -233,7 +233,7 @@ public class SetupForm extends JFrame {
 
                 tree1.repaint();
                 treeManager.expandRows(tree1);
-                outputTextArea.setText(pathComparator.getLastCompResultAsString());
+                outputTextArea.setText(pathComparator.toString());
             }
         });
 

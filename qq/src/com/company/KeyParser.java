@@ -49,7 +49,8 @@ public class KeyParser {
             key.insertWordValueToNameBetween(templates, '[', ']');
         }
 
-
+        comparator.setUp(keys);
+        output.add("Keys : ");
         for (Word w : keys) {
             output.add(new String(w.toString()));
         }
