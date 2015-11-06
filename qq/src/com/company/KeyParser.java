@@ -74,29 +74,40 @@ public class KeyParser {
 
     public ArrayList<String> parseToDefault (PathComparator comparator, String in, String... args)
     {
-        String garbage = "";
+        String garbage = "[garbage]";
         ArrayList<String> output = new ArrayList<>();
-        ArrayList<Word> keys = this.setUpKeys(in);
+        ArrayList<Word> keys = this.getArrayOfWords(in, '[', ']');
         if (keys.isEmpty() == false) {
-            garbage = keys.remove(0).getName();
+            garbage = keys.remove(0).getValue();
         }
         for (Word w : keys) {
             output.add(new String(w.toString()));
         }
-        output.add(garbage);
-        //output.add(new String(garbage));
+        keys = this.getArrayOfWords(garbage, '<', '>');
+        if (keys.isEmpty() == false) {
+            garbage = keys.remove(0).getValue();
+        }
+        for (Word w : keys) {
+            output.add(new String(w.toString()));
+        }
+        output.add(new String(garbage));
         return output;
     }
 
-    private ArrayList<Word> setUpKeys (String input)
+    private ArrayList<Word> getArrayOfWords (String input, char begin, char end)
     {
+        String garbage = "[garbage]";
         Word word = new Word(input);
-        ArrayList<String> array = word.getArrayFromValue('[', ']');
+        ArrayList<String> array = word.getArrayFromValue(begin, end);
+        if (array.isEmpty() == false) {
+            garbage = array.remove(0);
+        }
         ArrayList<Word> words = new ArrayList<>();
 
         for (String name : array) {
             words.add(new Word(name, ':'));
         }
+        words.add(0, new Word(garbage));
         return words;
     }
 

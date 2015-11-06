@@ -52,6 +52,7 @@ public class Word {
     public Word (String value)
     {
         this.value = new String(value);
+        this.name = "[name]";
     }
     public Word ()
     {
