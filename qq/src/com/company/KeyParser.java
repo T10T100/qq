@@ -10,6 +10,24 @@ import java.util.LinkedList;
  */
 public class KeyParser {
 
+    private class TemplateItem {
+        public String value;
+        public String name;
+
+        public TemplateItem (String name, String value)
+        {
+            this.name = name;
+            this.value = value;
+        }
+
+        public TemplateItem (String... s)
+        {
+            this.name = s[0];
+            this.value = s[1];
+        }
+    }
+
+
     public KeyParser ()
     {
 
@@ -56,83 +74,34 @@ public class KeyParser {
 
     public String[] parseToDefault (PathComparator comparator, String in, String... args)
     {
-        Word output = new Word();
-        Word input = new Word(in);
-        Word garbage;
-
-        if (input.containsKeyInTemplate(DefaultParseKeys.CLEAR) == true || input.containsKeyInTemplate(DefaultParseKeys.SKIP_TEMPLATES) == true) {
-            output.setTemplate("()");
-        } else if (input.containsKeyInTemplate(DefaultParseKeys.ANY) == true){
-            output.setTemplate("'any'");
-        } else {
-            output = input;
-        }
-
-        String additionString = new String("");
-
-
-        ArrayList<Word> listOfTemplates = separate(output, '<', '>');
-        garbage = listOfTemplates.remove(0);
-
-        ArrayList<Word> keyWordList = separateEnum(garbage, ',');
-        ArrayList<Word> keyAttributesList;
-        String wordTemplate = "";
-        Word word;
-        for (Word key : keyWordList) {
-            keyAttributesList = separateEnum(key, ':');
-            if (keyAttributesList.size() > 1) {
-                word = keyAttributesList.remove(0);
-                key.setName(word.getTemplate());
-                for (Word w : keyAttributesList) {
-                    wordTemplate += w.getTemplate();
-                }
-                key.setTemplate(wordTemplate);
-            } else if (keyAttributesList.isEmpty() == false) {
-                word = keyAttributesList.remove(0);
-                key.setTemplate(word.getTemplate());
-            }
-        }
-
-
-
-        LinkedList<Word> templates = new LinkedList<>();
-
-        for (Word t : listOfTemplates) {
-            templates.add(new Word(separateEnum(t, ':')));
-        }
-
+        String[] outputCollection = new String[2];
+        Word word = new Word(in);
+        ArrayList<String> array = word.getArrayFromValueAndSetValueAsFirst('[', ']');
         int i = 0;
-        String[] outCollection = new String[keyWordList.size() + listOfTemplates.size() + 1];
-        String name = "";
-        for (Word s : keyWordList) {
-            name = concatTemplates(s + additionString, templates);
-            if (s.containsKeyInTemplate(DefaultParseKeys.WNO_DIGITS) == true) {
-                outCollection[i++] = new String(removeDigits(name));
+        /*
+        for (String s : array) {
+            if (s == null) {
+                break;
             }
-            outCollection[i++] = new String(name);
-
+            //outputCollection[i++] = s;
         }
-
-        comparator.setArgs(outCollection);
-
-        outCollection[i++] = new String("\ntemplates : \n");
-
-        for (Word template : templates) {
-            outCollection[i++] = new String(template.toString());
+        */
+        if (array.isEmpty() == false) {
+            outputCollection[0] = array.get(1);
+            outputCollection[1] = array.get(1);
         }
-
-        return outCollection;
+        return outputCollection;
     }
 
-    private String[] extractName (Word input, char openChar, char closeChar)
+    private String[] extractName (String input, char openChar, char closeChar)
     {
-        int length = input.getTemplateLength();
+        int length = input.length();
         if (length < 1) {
             length = 1;
-            input.addToTemplate(" ");
+            input += " ";
         }
         int i = 0;
-        char[] temp = input.toCharArrayOfTemplate();
+        char[] temp = input.toCharArray();
         String[] output = {new String(""), new String("")};
 
         char separator = openChar;
@@ -154,18 +123,18 @@ public class KeyParser {
         return output;
     }
 
-    private ArrayList<Word> separate (Word input, char openChar, char closeChar)
+    private ArrayList<String> separate (String input, char openChar, char closeChar)
     {
-        int length = input.getTemplateLength();
+        int length = input.length();
         if (length < 1) {
             length = 1;
-            input.addToTemplate(" ");
+            input += " ";
         }
-        ArrayList<Word> outputCollection = new ArrayList<>();
+        ArrayList<String> outputCollection = new ArrayList<>();
         String[] bag = {new String(""), new String("")};
         int copyIndex = 1;
         char separator = openChar;
-        char[] parsing = input.toCharArrayOfTemplate();
+        char[] parsing = input.toCharArray();
         for (int i = 0; i < length; i++) {
             if (parsing[i] == separator) {
                 if (copyIndex == 1) {
@@ -175,39 +144,43 @@ public class KeyParser {
                 } else {
                     copyIndex = 1;
                     separator = openChar;
-                    outputCollection.add(new Word(bag[0]));
+                    outputCollection.add(new String(bag[0]));
                 }
             } else {
                 bag[copyIndex] += parsing[i];
             }
         }
-        outputCollection.add(0, new Word(bag[1]));
+        outputCollection.add(0, new String(bag[1]));
         return outputCollection;
     }
 
-    private ArrayList<Word> separateEnum (Word input, char separator)
+    private ArrayList<String> separateEnum (String input, char separator, char end)
     {
-        int length = input.getTemplateLength();
+        int length = input.length();
         if (length < 1) {
             length = 1;
-            input.addToTemplate(" ");
+            input += " ";
         }
-        ArrayList<Word> outputCollection = new ArrayList<>();
+        ArrayList<String> outputCollection = new ArrayList<>();
         String bag = "";
-        char[] parsing = input.toCharArrayOfTemplate();
+        char[] parsing = input.toCharArray();
         for (int i = 0; i < length; i++) {
+            if (parsing[i] == end) {
+                outputCollection.add(new String(bag));
+                return outputCollection;
+            }
             if (parsing[i] == separator) {
-                outputCollection.add(new Word(bag));
+                outputCollection.add(new String(bag));
                 bag = "";
             } else {
                 bag += parsing[i];
             }
         }
-        outputCollection.add(0, new Word(bag));
+        outputCollection.add(new String(bag));
         return outputCollection;
     }
 
-    public String concatTemplates (String input, LinkedList<Word> templates)
+    public String concatTemplates (String input, LinkedList<TemplateItem> templates)
     {
         int length = input.length();
         if (length < 1) {
@@ -220,9 +193,9 @@ public class KeyParser {
         for (int i = 0; i < length; i++) {
             if (parsing[i] == '+') {
                 name = input.substring(i + 1);
-                for (Word template : templates) {
-                    if (name.contains(template.getName()) == true) {
-                        output += template.getTemplate();
+                for (TemplateItem template : templates) {
+                    if (name.contentEquals(template.name) == true) {
+                        output += template.value;
                         return output;
                     }
                 }

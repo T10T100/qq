@@ -1,174 +1,322 @@
 package com.company;
 
-import com.sun.xml.internal.fastinfoset.util.CharArray;
+import jdk.nashorn.internal.runtime.regexp.joni.MatcherFactory;
+import sun.misc.Regexp;
 
 import java.util.ArrayList;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Created by Operator on 04.11.2015.
+ * Created by Afony on 04.11.2015.
  */
 public class Word {
-    private String name;
-    private String template;
-
-
-    public Word (Word word)
-    {
-        this.name = word.name;
-        this.template = word.template;
-    }
+    ArrayList<Word> bounds;
+    ArrayList<String> args;
+    String name;
+    String value;
     public Word (ArrayList<Word> words)
     {
-        if (words.isEmpty() == false) {
-            this.template = words.remove(0).template;
-        } else {
-            this.name = new String(" ");
-            this.template = new String(" ");
+        if (words.isEmpty() == true) {
+            this.name = new String("[name]");
+            this.value = new String("[value]");
+            return;
         }
-        if (words.isEmpty() == false) {
-            this.name = words.remove(0).template;
-        } else {
-            this.name = new String(" ");
+        for (Word word : words) {
+            this.bounds.add(word);
+        }
+        this.name = words.get(0).name;
+        this.value = words.get(0).value;
+    }
+    public  Word (String... strings)
+    {
+        int length = strings.length;
+        this.name = new String(strings[0]);
+        this.value = new String(strings[1]);
+        length = strings.length - length;
+        for (int i = 2; i < length; i++) {
+            this.args.add(i, new String(strings[i]));
         }
     }
-    public Word (String name, String template)
+    public Word (String name, String value)
     {
-        this.name = name;
-        this.template = template;
+        this.name = new String(name);
+        this.value = new String(value);
     }
-    public Word (String... args)
+    public Word (String value)
     {
-        this.name = args[0];
-        this.template = args[1];
+        this.value = new String(value);
     }
-
-    public Word (String template)
-    {
-        this.name = new String(" ");
-        this.template = template;
-    }
-
     public Word ()
     {
-        this.name = new String(" ");
-        this.template = new String(" ");
+        this.name = "[name]";
+        this.value = "[value]";
     }
 
-
-
-
-
-
-    public char[] toCharArrayOfName ()
+    private String[] split (char[] parsing, char splitter)
     {
-        return this.name.toCharArray();
+        String[] outputCollection = new String[2];
+        String bag = new String();
+        int i = 0;
+        for (; i < parsing.length; i++) {
+            if (parsing[i] == splitter) {
+                i++;
+                break;
+            }
+            bag += parsing[i];
+        }
+        outputCollection[0] = bag;
+        bag = "";
+        for (; i < parsing.length; i++) {
+            bag += parsing[i];
+        }
+        outputCollection[1] = bag;
+        return outputCollection;
     }
-    public char[] toCharArrayOfTemplate ()
+    public String[] splitName (char splitter)
     {
-        return this.template.toCharArray();
+        return this.split(this.name.toCharArray(), splitter);
     }
-
-    public void addToName (String add)
+    public String[] splitValue (char splitter)
     {
-        this.name += add;
-    }
-    public void addToTemplate (String add)
-    {
-        this.template += add;
-    }
-    public void addToName (char add)
-    {
-        this.name += add;
-    }
-    public void addToTemplate (char add)
-    {
-        this.template += add;
+        return this.split(this.value.toCharArray(), splitter);
     }
 
-    public void setName (String name)
+    private String splitTo (char[] parsing, char splitter)
     {
-        this.name = new String(name);
+        String bag = new String();
+        for (int i = 0; i < parsing.length; i++) {
+            if (parsing[i] == splitter) {
+                break;
+            }
+            bag += parsing[i];
+        }
+        return bag;
     }
-    public  void setTemplate (String template)
+    public String splitNameTo (char splitter)
     {
-        this.template = new String(template);
+        return this.splitTo(name.toCharArray(), splitter);
     }
-    public void set (String name, String template)
+    public String splitValueTo (char splitter)
     {
-        this.name = new String(name);
-        this.template = new String(template);
+        return this.splitTo(value.toCharArray(), splitter);
     }
 
-
-    public String getName()
+    private String splitFrom (char[] parsing, char splitter)
     {
-        return name;
+        String bag = new String();
+        int index = 0;
+        for (int i = 0; i < parsing.length; i++) {
+            if (parsing[i] == splitter) {
+                index = i + 1;
+                break;
+            }
+        }
+        for (int i = index; i < parsing.length; i++) {
+            bag += parsing[i];
+        }
+        return bag;
     }
-    public String getTemplate ()
+    public String splitNameFrom (char splitter)
     {
-        return this.template;
+        return this.splitFrom(this.name.toCharArray(), splitter);
     }
-    public String[] get ()
+    public String splitValueFrom (char splitter)
     {
-        String[] output = {this.name, this.template};
+        return this.splitFrom(this.value.toCharArray(), splitter);
+    }
+    public String splitNameToAndSetName (char splitter)
+    {
+        this.name = this.splitNameTo(splitter);
+        return this.name;
+    }
+    public String splitNameFromAndSetName (char splitter)
+    {
+        this.name = this.splitNameFrom(splitter);
+        return this.name;
+    }
+    public String splitNameToAndSetValue (char splitter)
+    {
+        this.value = this.splitValueTo(splitter);
+        return this.value;
+    }
+    public String splitNameFromAndSetValue (char splitter)
+    {
+        this.value = this.splitValueFrom(splitter);
+        return this.value;
+    }
+    public  String[] splitNameAndSet (char splitter)
+    {
+        String[] output = split(this.name.toCharArray(), splitter);
+        this.name = output[0];
+        this.value = output[1];
         return output;
+    }
+    public  String[] splitValueAndSet (char splitter)
+    {
+        String[] output = split(this.value.toCharArray(), splitter);
+        this.name = output[0];
+        this.value = output[1];
+        return output;
+    }
+    private String[] extractFromOnce (char[] parsing, char begin, char end)
+    {
+        int i = 0;
+        String[] output = {new String(""), new String("")};
+        char separator = begin;
+        int bufferIndex = 1;
+        boolean copyAble = true;
+        do {
+            if (parsing[i] == separator && copyAble == true) {
+                if (bufferIndex == 1) {
+                    separator = end;
+                    bufferIndex = 0;
+                } else {
+                    copyAble = false;
+                    bufferIndex = 1;
+                }
+            } else {
+                output[bufferIndex] += parsing[i];
+            }
+        } while (++i < parsing.length);
+        return output;
+    }
+    public String[] getFromNameOnce (char begin, char end)
+    {
+        return this.extractFromOnce(this.name.toCharArray(), begin, end);
+    }
+    public String[] getFromValueOnce (char begin, char end)
+    {
+        return this.extractFromOnce(this.value.toCharArray(), begin, end);
+    }
+    public String getFromNameOnceAndSetName (char begin, char end)
+    {
+        this.name = this.extractFromOnce(this.name.toCharArray(), begin, end)[0];
+        return this.name;
+    }
+    public String getFromValueOnceAndSetValue (char begin, char end)
+    {
+        if (this.value.isEmpty() == true) {
+            this.value += " ";
+        }
+        this.value = this.extractFromOnce(this.name.toCharArray(), begin, end)[0];
+        return this.value;
+    }
+    public ArrayList<String> getArrayFromValue (char begin, char end)
+    {
+        ArrayList<String> outputCollection = new ArrayList<>();
+        String[] bag = {new String(""), new String("")};
+        int copyIndex = 1;
+        char separator = begin;
+        char[] parsing = this.value.toCharArray();
+        for (int i = 0; i < this.value.length(); i++) {
+            if (parsing[i] == separator) {
+                if (copyIndex == 1) {
+                    copyIndex = 0;
+                    separator = end;
+                    bag[copyIndex] = "";
+                } else {
+                    copyIndex = 1;
+                    separator = begin;
+                    outputCollection.add(new String(bag[0]));
+                }
+            } else {
+                bag[copyIndex] += parsing[i];
+            }
+            System.out.println(bag[copyIndex]);
+        }
+        outputCollection.add(0, new String(bag[1]));
+        return outputCollection;
+    }
+    public ArrayList<String> getArrayFromValueAndSetNameAsFirst (char begin, char end)
+    {
+        ArrayList<String> array = this.getArrayFromValue(begin, end);
+        if (array.isEmpty() == false) {
+            this.name = array.remove(0);
+        }
+        return array;
+    }
+    public ArrayList<String> getArrayFromValueAndSetValueAsFirst (char begin, char end)
+    {
+        ArrayList<String> array = new ArrayList<>();
+        array.addAll(getArrayFromValue(begin, end));
+        this.value = array.remove(0);
+        return array;
+    }
+
+
+    public boolean isNameContainsKey (DefaultParseKeys key)
+    {
+        return this.name.contains(key.get());
+    }
+    public boolean isValueContainsKey (DefaultParseKeys key)
+    {
+        return this.value.contains(key.get());
+    }
+    public boolean isNameEqualsTo (String content)
+    {
+        return this.name.contentEquals(content);
+    }
+    public boolean isValueEqualsTo (String content)
+    {
+        return this.value.contentEquals(content);
     }
 
     public int getNameLength ()
     {
         return this.name.length();
     }
-
-    public int getTemplateLength ()
+    public int getValueLength ()
     {
-        return this.template.length();
+        return this.value.length();
+    }
+    public ArrayList<String> getArgs()
+    {
+        return args;
     }
 
-    public boolean containsKeysInName (DefaultParseKeys... keys)
+    public ArrayList<Word> getBounds()
     {
-        for (DefaultParseKeys key : keys) {
-            if (this.name.contains(key.get()) == false) {
-                return false;
-            }
+        return bounds;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public String getValue()
+    {
+        return value;
+    }
+
+    public void setArgs(ArrayList<String> args)
+    {
+        int length = args.size();
+        for (int i = 0; i < length; i++) {
+            this.args.add(i, new String(args.get(i)));
         }
-        return true;
     }
 
-    public boolean containsKeyInName (DefaultParseKeys key)
+    public void setBounds(ArrayList<Word> bounds)
     {
-        return this.name.contains(key.get());
+        this.bounds = bounds;
     }
 
-    public  boolean containsKeyInTemplate (DefaultParseKeys key)
+    public void setName(String name)
     {
-        return this.template.contains(key.get());
+        this.name = new String(name);
     }
 
-    public boolean containsKeysInTemplate (DefaultParseKeys... keys)
+    public void setValue(String value)
     {
-        for (DefaultParseKeys key : keys) {
-            if (this.template.contains(key.get()) == false) {
-                return false;
-            }
-        }
-        return true;
+        this.value = new String(value);
     }
-
-    public boolean equalsNameTo (String name)
-    {
-        return this.name.contentEquals(name);
-    }
-
-    public boolean equalsTemplateTo (String name)
-    {
-        return this.template.contentEquals(name);
-    }
-
 
     @Override
     public String toString()
     {
-        return "[" + this.name + "->" + this.template + "];";
+        return new String("[" + this.name + "]->[" + this.value + "]");
     }
-
 }
