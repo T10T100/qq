@@ -72,12 +72,12 @@ public class KeyParser {
         return output;
     }
 
-    public String[] parseToDefault (PathComparator comparator, String in, String... args)
+    public ArrayList<String> parseToDefault (PathComparator comparator, String in, String... args)
     {
         String[] outputCollection;
         Word word = new Word(in);
         ArrayList<String> array = word.getArrayFromValueAndSetValueAsFirst('[', ']');
-        int i = 0;
+
         /*
         for (String s : array) {
             if (s == null) {
@@ -86,11 +86,7 @@ public class KeyParser {
             //outputCollection[i++] = s;
         }
         */
-        outputCollection = new String[array.size()];
-        for (String s : array) {
-            outputCollection[i++] = s;
-        }
-        return outputCollection;
+        return array;
     }
 
     private String[] extractName (String input, char openChar, char closeChar)

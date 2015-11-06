@@ -203,14 +203,14 @@ public class Word {
         this.value = this.extractFromOnce(this.name.toCharArray(), begin, end)[0];
         return this.value;
     }
-    public ArrayList<String> getArrayFromValue (char begin, char end)
+
+    private ArrayList<String> getArray (char[] parsing, char begin, char end)
     {
         ArrayList<String> outputCollection = new ArrayList<>();
         String[] bag = {new String(""), new String("")};
         int copyIndex = 1;
         char separator = begin;
-        char[] parsing = this.value.toCharArray();
-        for (int i = 0; i < this.value.length(); i++) {
+        for (int i = 0; i < parsing.length; i++) {
             if (parsing[i] == separator) {
                 if (copyIndex == 1) {
                     copyIndex = 0;
@@ -228,6 +228,11 @@ public class Word {
         outputCollection.add(0, new String(bag[1]));
         return outputCollection;
     }
+
+    public ArrayList<String> getArrayFromValue (char begin, char end)
+    {
+        return getArray(this.value.toCharArray(), begin, end);
+    }
     public ArrayList<String> getArrayFromValueAndSetNameAsFirst (char begin, char end)
     {
         ArrayList<String> array = this.getArrayFromValue(begin, end);
@@ -240,6 +245,30 @@ public class Word {
     {
         ArrayList<String> array = new ArrayList<>();
         array.addAll(getArrayFromValue(begin, end));
+        if (array.isEmpty() == false) {
+            this.value = array.remove(0);
+        } else {
+            this.value = "[value]";
+        }
+        return array;
+    }
+
+    public ArrayList<String> getArrayFromName (char begin, char end)
+    {
+        return getArray(this.name.toCharArray(), begin, end);
+    }
+    public ArrayList<String> getArrayFromNameAndSetNameAsFirst (char begin, char end)
+    {
+        ArrayList<String> array = this.getArrayFromName(begin, end);
+        if (array.isEmpty() == false) {
+            this.name = array.remove(0);
+        }
+        return array;
+    }
+    public ArrayList<String> getArrayFromNameAndSetValueAsFirst (char begin, char end)
+    {
+        ArrayList<String> array = new ArrayList<>();
+        array.addAll(getArrayFromName(begin, end));
         if (array.isEmpty() == false) {
             this.value = array.remove(0);
         } else {
