@@ -166,7 +166,7 @@ public class Word {
         this.value = output[1];
         return output;
     }
-    private String[] extractFromOnce (char[] parsing, char begin, char end)
+    private String[] getFromOnce (char[] parsing, char begin, char end)
     {
         int i = 0;
         String[] output = {new String(""), new String("")};
@@ -190,15 +190,15 @@ public class Word {
     }
     public String[] getFromNameOnce (char begin, char end)
     {
-        return this.extractFromOnce(this.name.toCharArray(), begin, end);
+        return this.getFromOnce(this.name.toCharArray(), begin, end);
     }
     public String[] getFromValueOnce (char begin, char end)
     {
-        return this.extractFromOnce(this.value.toCharArray(), begin, end);
+        return this.getFromOnce(this.value.toCharArray(), begin, end);
     }
     public String getFromNameOnceAndSetName (char begin, char end)
     {
-        this.name = this.extractFromOnce(this.name.toCharArray(), begin, end)[0];
+        this.name = this.getFromOnce(this.name.toCharArray(), begin, end)[0];
         return this.name;
     }
     public String getFromValueOnceAndSetValue (char begin, char end)
@@ -206,7 +206,7 @@ public class Word {
         if (this.value.isEmpty() == true) {
             this.value += " ";
         }
-        this.value = this.extractFromOnce(this.name.toCharArray(), begin, end)[0];
+        this.value = this.getFromOnce(this.name.toCharArray(), begin, end)[0];
         return this.value;
     }
 
@@ -284,6 +284,150 @@ public class Word {
     }
 
 
+    private ArrayList<String> getArray (char[] parsing, char delimiter)
+    {
+        ArrayList<String> outputCollection = new ArrayList<>();
+        String bag = "";
+        for (int i = 0; i < parsing.length; i++) {
+            if (parsing[i] == delimiter) {
+                outputCollection.add(new String(bag));
+                bag = "";
+            } else {
+                bag += parsing[i];
+            }
+        }
+        outputCollection.add(new String(bag));
+        return outputCollection;
+    }
+    public ArrayList<String> getArrayFromName (char delimiter)
+    {
+        return this.getArray(this.name.toCharArray(), delimiter);
+    }
+    public ArrayList<String> getArrayFromNameAndSetNameAsFirst (char delimiter)
+    {
+        ArrayList<String> array = this.getArrayFromName(delimiter);
+        if (array.isEmpty() == false) {
+            this.name = array.remove(0);
+        }
+        return array;
+    }
+    public ArrayList<String> getArrayFromNameAndSetValueAsFirst (char delimiter)
+    {
+        ArrayList<String> array = new ArrayList<>();
+        array.addAll(getArrayFromName(delimiter));
+        if (array.isEmpty() == false) {
+            this.value = array.remove(0);
+        } else {
+            this.value = "[value]";
+        }
+        return array;
+    }
+    public ArrayList<String> getArrayFromValue (char delimiter)
+    {
+        return this.getArray(this.value.toCharArray(), delimiter);
+    }
+    public ArrayList<String> getArrayFromValueAndSetNameAsFirst (char delimiter)
+    {
+        ArrayList<String> array = this.getArrayFromValue(delimiter);
+        if (array.isEmpty() == false) {
+            this.name = array.remove(0);
+        }
+        return array;
+    }
+    public ArrayList<String> getArrayFromValueAndSetValueAsFirst (char delimiter)
+    {
+        ArrayList<String> array = new ArrayList<>();
+        array.addAll(getArrayFromValue(delimiter));
+        if (array.isEmpty() == false) {
+            this.value = array.remove(0);
+        } else {
+            this.value = "[value]";
+        }
+        return array;
+    }
+
+
+    private String insertWordValueBetween (char[] parsing, ArrayList<Word> words, char begin, char end)
+    {
+        String output = "";
+        String name = "";
+        boolean gatherName = false;
+        for (int watchIndex = 0; watchIndex < parsing.length; watchIndex++) {
+            if (parsing[watchIndex] == begin) {
+                watchIndex++;
+                if (watchIndex >= parsing.length) {
+                    break;
+                }
+                name = "";
+                gatherName = false;
+                for (; watchIndex < parsing.length; watchIndex++) {
+                    if (parsing[watchIndex] == end) {
+                        if (gatherName == false) {
+                            for (Word word : words) {
+                                output += word.value;
+                            }
+                        }
+                        watchIndex++;
+                        break;
+                    }
+                    name += parsing[watchIndex];
+                    gatherName = true;
+                }
+                if (watchIndex >= parsing.length) {
+                    break;
+                }
+                for (Word word : words) {
+                    if (name.contentEquals(word.name) == true) {
+                        output += word.value;
+                        break;
+                    }
+                }
+
+            }
+            output += parsing[watchIndex];
+        }
+        return output;
+    }
+    public String insertWordValueToNameBetween (ArrayList<Word> words, char begin, char end)
+    {
+        this.name = this.insertWordValueBetween(this.name.toCharArray(), words, begin, end);
+        return this.name;
+    }
+    public String insertWordValueToValueBetween (ArrayList<Word> words, char begin, char end)
+    {
+        this.value = this.insertWordValueBetween(this.name.toCharArray(), words, begin, end);
+        return this.value;
+    }
+
+
+    public void removeSpacesFromName ()
+    {
+        char[] array = this.name.toCharArray();
+        String name = "";
+        for (int i = 0; i < array.length; i++) {
+            if (Character.isSpaceChar(array[i]) == false) {
+                name += array[i];
+            }
+        }
+        this.name = name;
+    }
+    public void removeSpacesFromValue ()
+    {
+        char[] array = this.value.toCharArray();
+        String name = "";
+        for (int i = 0; i < array.length; i++) {
+            if (Character.isSpaceChar(array[i]) == false) {
+                name += array[i];
+            }
+        }
+        this.value = name;
+    }
+    public void removeSpacesFromWord ()
+    {
+        this.removeSpacesFromName();
+        this.removeSpacesFromValue();
+    }
+
     public boolean isNameContainsKey (DefaultParseKeys key)
     {
         return this.name.contains(key.get());
@@ -299,6 +443,14 @@ public class Word {
     public boolean isValueEqualsTo (String content)
     {
         return this.value.contentEquals(content);
+    }
+    public boolean isNameContains (String content)
+    {
+        return this.name.contains(content);
+    }
+    public boolean isValueContains (String content)
+    {
+        return this.value.contains(content);
     }
 
     public int getNameLength ()
@@ -355,6 +507,6 @@ public class Word {
     @Override
     public String toString()
     {
-        return new String("[" + this.name + "]->[" + this.value + "]");
+        return new String("[" + this.name + "] = [" + this.value + "]");
     }
 }
