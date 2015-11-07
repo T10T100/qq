@@ -48,7 +48,8 @@ public class PathComparator {
     public void resetAll ()
     {
         for (pathCompareKey key : keys) {
-            //key.clearAll();
+            key.clearAll();
+
         }
     }
 
@@ -56,14 +57,18 @@ public class PathComparator {
     {
         boolean result = false;
         for (pathCompareKey key : keys) {
-            result |= key.compare(file.getName(), file.length(), logic);
+            if (key != null) {
+                result |= key.compare(file.getName(), file.length(), logic);
+            }
         }
+
         return result;
     }
 
     public String getSystemInfo ()
     {
         FileSystem system = FileSystems.getDefault();
+
         return system.toString();
     }
 
@@ -71,6 +76,7 @@ public class PathComparator {
     public String toString()
     {
         String output = "";
+
         for (pathCompareKey key : keys) {
             output += key.toString();
         }

@@ -184,7 +184,7 @@ public class TreeManager {
             if (file.isDirectory()) {
                 createBranchAndInsertFromRoot(tree, node, true);
             } else {
-                if (comparator.compareAndCollect(file, false) == false) {
+                if (comparator.compareAndCollect(file, true) == false) {
                     node.setMatch(false);
                     //this.remove(tree, node);
                     return;
@@ -208,11 +208,10 @@ public class TreeManager {
         }
         DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
         PathTreeNode root = (PathTreeNode)model.getRoot();
-        comparator.resetAll();
         comparator.setTimeStart(System.nanoTime());
         this.recursiveScan(tree, root, comparator, watchAll);
         comparator.setTimeEnd(Math.abs(System.nanoTime()));
-        return "Well done!";
+        return "Succeed";
     }
 
     public long expandRows (JTree tree)
@@ -260,7 +259,6 @@ public class TreeManager {
     public class runnableProcessWatch extends Thread {
         @Override
         public void run () {
-            System.out.println("here");
             guiBar.setIndeterminate(true);
             while (endOfWatch == false) {
                 sleepSafe(1000, 0);

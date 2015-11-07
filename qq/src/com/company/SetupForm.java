@@ -224,13 +224,8 @@ public class SetupForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 treeManager.collapseAll(tree1);
+                pathComparator.resetAll();
                 treeManager.watchAllLeafsInTree(tree1, pathComparator, true);
-
-                parsedKeys.setText("");
-                for (String s : keyParser.parseToDefault(pathComparator, keyTexArea.getText())) {
-                    parsedKeys.append(s + "\n");
-                }
-
                 tree1.repaint();
                 treeManager.expandRows(tree1);
                 outputTextArea.setText(pathComparator.toString());

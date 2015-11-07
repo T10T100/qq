@@ -4,18 +4,20 @@ package com.company;
  * Created by k on 06.11.2015.
  */
 public class pathCompareKey {
-    private Word key;
-    private int matched = 0;
-    private int watched = 0;
-    private long totalSize = 0;
-    private int matchedToArgs = 0;
+    protected Word key;
+    protected int matched;
+    protected int watched;
+    protected long totalSize;
+    protected long matchedSize;
+    protected int matchedToArgs;
 
     public pathCompareKey (Word key)
     {
         this.key = key;
-        this.watched = 1;
+        this.watched = 0;
         this.matched = 0;
         this.totalSize = 0;
+        this.matchedSize = 0;
         this.matchedToArgs = 0;
     }
 
@@ -24,6 +26,7 @@ public class pathCompareKey {
         this.watched = 0;
         this.matched = 0;
         this.totalSize = 0;
+        this.matchedSize = 0;
         this.matchedToArgs = 0;
     }
 
@@ -31,7 +34,8 @@ public class pathCompareKey {
     {
         this.watched++;
         this.totalSize += size;
-        if (name.contains(key.getName())) {
+        if (name.contains(key.getName()) == true) {
+            this.matchedSize += size;
             this.matched++;
             return true;
         }
@@ -42,9 +46,9 @@ public class pathCompareKey {
     {
         this.watched++;
         this.totalSize += size;
-        if (value.contains(key.getValue())) {
+        if (value.contains(key.getValue()) == true) {
+            this.matchedSize += size;
             this.matched++;
-            System.out.println(matched);
             return true;
         }
         return false;
@@ -74,13 +78,13 @@ public class pathCompareKey {
     private String printSize (long size)
     {
         String s;
-        if (size > 1000000000) {
+        if (size > 2000000000) {
             size /= 1000000000;
             s = "GBytes";
-        } else if (size > 1000000) {
+        } else if (size > 2000000) {
             size /= 1000000;
             s = "MBytes";
-        } else if (size > 10000) {
+        } else if (size > 20000) {
             size /= 1000;
             s = "KBytes";
         } else {
@@ -88,6 +92,7 @@ public class pathCompareKey {
         }
         return "\"" + Long.toString(size) + "\" " + s;
     }
+
 
     @Override
     public String toString()
@@ -101,9 +106,51 @@ public class pathCompareKey {
                 Integer.toString(this.matched) +
                 "\" Paths\nMissmatched : \"" +
                 Integer.toString(this.watched - this.matched) +
-                "\" Items\nSize of matched : " +
-                this.printSize(this.totalSize - this.matched) +
+                "\" Paths\nSize of matched : " +
+                this.printSize(this.matchedSize) +
                 "\n\n");
         return output;
     }
+
+    public int getMatched()
+    {
+        return matched;
+    }
+
+    public int getWatched() {
+        return watched;
+    }
+
+    public int getMatchedToArgs() {
+        return matchedToArgs;
+    }
+
+    public long getTotalSize() {
+        return totalSize;
+    }
+
+    public void setKey(Word key) {
+        this.key = key;
+    }
+
+    public Word getKey() {
+        return key;
+    }
+
+    public void setMatched(int matched) {
+        this.matched = matched;
+    }
+
+    public void setMatchedToArgs(int matchedToArgs) {
+        this.matchedToArgs = matchedToArgs;
+    }
+
+    public void setTotalSize(long totalSize) {
+        this.totalSize = totalSize;
+    }
+
+    public void setWatched(int watched) {
+        this.watched = watched;
+    }
+
 }
