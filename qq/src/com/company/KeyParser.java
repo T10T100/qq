@@ -53,12 +53,12 @@ public class KeyParser {
         }
 
         comparator.setUp(keys);
-        String arg[];
+        ArrayList<String> arg;
         setted = false;
         for (Word w : patterns) {
-            arg = w.getFromValueOnce('\"', '\"');
-            w.setValue(arg[1]);
-            w.addArg(arg[0]);
+            arg = w.getArrayFromValue('\"', '\"');
+            w.setValue(arg.remove(0));
+            w.setArgs(arg);
             w.removeSpacesFromWord();
             if (w.name.contentEquals("out")) {
                 pattern = w;

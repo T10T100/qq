@@ -1,10 +1,13 @@
 package com.company;
 
 import com.sun.java.swing.plaf.motif.MotifTextUI;
+import com.sun.org.apache.xalan.internal.xsltc.dom.ArrayNodeListIterator;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ComboBoxBase;
 import javafx.scene.control.cell.ComboBoxListCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
+import sun.misc.*;
+import sun.misc.Queue;
 
 import javax.print.DocFlavor;
 import javax.swing.*;
@@ -21,7 +24,7 @@ import javax.swing.tree.ExpandVetoException;
 import javax.xml.stream.events.Characters;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Created by Operator on 26.10.2015.
@@ -391,13 +394,11 @@ public class SetupForm extends JFrame {
         int index = 0;
         for (textBoundedItem item : items) {
             textArea.append(item.toString());
-            if (item.getHighlightFlag() == true) {
-                try {
-                    highLighter.addHighlight(index, index + item.getLength() - 1, new DefaultHighlighter.DefaultHighlightPainter(item.getColor()));
-                }
-                catch (BadLocationException exception) {
+            try {
+                highLighter.addHighlight(index, index + item.getLength() - 1, item.getHighLight());
+            }
+            catch (BadLocationException exception) {
 
-                }
             }
             index += item.getLength();
         }
@@ -411,23 +412,96 @@ public class SetupForm extends JFrame {
         if (input.isEmpty() == true) {
             return "Empty input!";
         }
-        String keyWord = textField.getText();
-        if (keyWord.isEmpty() == true) {
-            return "No key!";
+        if (textField.getText().length() == 0) {
+            return "nothing to search for!";
         }
-        int watchIndex = input.indexOf(keyWord);
-        int keyWordSize = keyWord.length();
+        Word keyWords = new Word(textField.getText());
+        int keyWordSize;
+        int watchIndex = 0;
+        ArrayList<Color> colors = new ArrayList<>();
+        colors.add(Color.ORANGE);
+        colors.add(Color.CYAN);
+        colors.add(Color.magenta);
+        colors.add(Color.PINK);
+        colors.add(Color.RED);
 
-        while (watchIndex >= 0) {
-            try {
-                highLighter.addHighlight(watchIndex, watchIndex + keyWordSize, new DefaultHighlighter.DefaultHighlightPainter(Color.pink));
+        Iterator<Color> it = colors.iterator();
+        Highlighter keysHighlighter = textField.getHighlighter();
+        keysHighlighter.removeAllHighlights();
+        int keyIndex = 0;
+        Color tColor = Color.WHITE;
+        Word word;
+        char superChar = '0';
+        for (String text : keyWords.getArrayFromValue(',')) {
+            if (it.hasNext() == false) {
+                it = colors.iterator();
             }
-            catch (BadLocationException exception) {
+            tColor = it.next();
+            if (text.isEmpty() == false) {
+                if (text.contains("<") == true) {
+                    superChar = '<';
+                } else if (text.contains(">") == true) {
+                    superChar = '>';
+                } else if (text.contains("=") == true) {
+                    superChar = '=';
+                }
+                if (superChar != '0') {
+                    word = new Word(text, superChar);
+                    if (word.getValue().length() == 0 || word.getName().length() == 0) {
+                        continue;
+                    }
+                    word.removeAllButDigitsFromWord();
+                    long bottomValue = Long.parseLong(word.getName());
+                    long topValue = Long.parseLong(word.getValue());
+                    Word inputNumbers = new Word(input);
+                    ArrayList<Word.BoundedNumber> numbers = new ArrayList<>();
+                    for (Word.BoundedNumber num : inputNumbers.getIntegersFromValue()) {
+                        switch (superChar){
+                            case '<' :
+                                if (bottomValue < num.getNumber() && num.getNumber() < topValue) {
+                                    numbers.add(num);
+                                }
+                                break;
+                            case '>' :
+                                if (bottomValue > num.getNumber() && num.getNumber() > topValue) {
+                                    numbers.add(num);
+                                }
+                                break;
+                            case '=' :
+                                if (bottomValue < num.getNumber() || num.getNumber() > topValue) {
+                                    numbers.add(num);
+                                }
+                                break;
+                        }
 
+                    }
+                    for (Word.BoundedNumber num : numbers) {
+                        try {
+                            highLighter.addHighlight(num.getStartIndex(), num.getEndIndex(), new DefaultHighlighter.DefaultHighlightPainter(tColor));
+                        } catch (BadLocationException exception) {
+
+                        }
+                    }
+                } else {
+                    watchIndex = input.indexOf(text);
+                    keyWordSize = text.length();
+                    try {
+                        keysHighlighter.addHighlight(keyIndex, keyIndex + keyWordSize + 1, new DefaultHighlighter.DefaultHighlightPainter(tColor));
+                    } catch (BadLocationException exception) {
+
+                    }
+                    while (watchIndex >= 0) {
+                        try {
+                            highLighter.addHighlight(watchIndex, watchIndex + keyWordSize, new DefaultHighlighter.DefaultHighlightPainter(tColor));
+                        } catch (BadLocationException exception) {
+
+                        }
+                        watchIndex = input.indexOf(text, watchIndex + 1);
+                    }
+                    keyIndex += keyWordSize + 1;
+                }
             }
-            watchIndex = input.indexOf(keyWord, watchIndex + 1);
         }
-
-        return keyWord;
+        return "!";
     }
 }

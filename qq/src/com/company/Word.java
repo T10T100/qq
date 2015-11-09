@@ -416,7 +416,34 @@ public class Word {
         this.value = this.insertWordValueBetween(this.name.toCharArray(), words, begin, end);
         return this.value;
     }
+    private ArrayList<BoundedNumber> getIntegersFrom (char[] input)
+    {
+        String parsed = "";
+        ArrayList<BoundedNumber> output = new ArrayList<>();
+        int startIndex = 0;
+        for (int i = 0; i < input.length; i++) {
+            if (Character.isDigit(input[i]) == true) {
+                startIndex = i;
+                parsed += input[i];
+                while (Character.isDigit(input[++i]) == true) {
+                    parsed += input[i];
+                }
+                output.add(new BoundedNumber(Long.parseLong(parsed), startIndex, i));
+                parsed = "";
+            } else {
 
+            }
+        }
+        return output;
+    }
+    public ArrayList<BoundedNumber> getIntegersFromName ()
+    {
+        return this.getIntegersFrom(this.name.toCharArray());
+    }
+    public ArrayList<BoundedNumber> getIntegersFromValue ()
+    {
+        return this.getIntegersFrom(this.value.toCharArray());
+    }
 
     public void removeSpacesFromName ()
     {
@@ -445,6 +472,31 @@ public class Word {
         this.removeSpacesFromName();
         this.removeSpacesFromValue();
     }
+
+    public String removeAllButDigits (char[] input)
+    {
+        String output = "";
+        for (int i = 0; i <  input.length; i++) {
+            if (Character.isDigit(input[i]) == true) {
+                output += input[i];
+            }
+        }
+        return output;
+    }
+    public void removeAllButDigitsFromName ()
+    {
+        this.name = this.removeAllButDigits(this.name.toCharArray());
+    }
+    public void removeAllButDigitsFromValue ()
+    {
+        this.value = this.removeAllButDigits(this.value.toCharArray());
+    }
+    public void removeAllButDigitsFromWord ()
+    {
+        this.name = this.removeAllButDigits(this.name.toCharArray());
+        this.value = this.removeAllButDigits(this.value.toCharArray());
+    }
+
 
     public boolean isNameContainsKey (DefaultParseKeys key)
     {
@@ -547,5 +599,32 @@ public class Word {
             }
         }
         return new String("[" + this.name + "] = [" + this.value + "] : " + args);
+    }
+
+    public class BoundedNumber {
+        private final long number;
+        private final int startIndex;
+        private final int endIndex;
+        public BoundedNumber (long number, int startIndex, int endIndex)
+        {
+            this.number = number;
+            this.startIndex = startIndex;
+            this.endIndex = endIndex;
+        }
+
+        public int getEndIndex()
+        {
+            return endIndex;
+        }
+
+        public int getStartIndex()
+        {
+            return startIndex;
+        }
+
+        public long getNumber()
+        {
+            return number;
+        }
     }
 }
