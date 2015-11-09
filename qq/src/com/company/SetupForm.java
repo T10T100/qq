@@ -21,6 +21,7 @@ import javax.swing.tree.ExpandVetoException;
 import javax.xml.stream.events.Characters;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 /**
  * Created by Operator on 26.10.2015.
@@ -228,7 +229,8 @@ public class SetupForm extends JFrame {
                 treeManager.watchAllLeafsInTree(tree1, pathComparator, true);
                 tree1.repaint();
                 treeManager.expandRows(tree1);
-                outputTextArea.setText(pathComparator.toString());
+                //outputTextArea.setText(pathComparator.toString());
+                printWithHighlight(pathComparator.getTextItems(), outputTextArea);
             }
         });
 
@@ -243,6 +245,7 @@ public class SetupForm extends JFrame {
                     for (String s : keyParser.parseToDefault(pathComparator, keyTexArea.getText())) {
                         parsedKeys.append(s + "\n");
                     }
+
                     /*
                     Highlighter highLighter = keyTexArea.getHighlighter();
                     Highlighter.HighlightPainter highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.orange);
@@ -326,4 +329,25 @@ public class SetupForm extends JFrame {
 
     }
 
+
+
+    private void printWithHighlight (ArrayList<textBoundedItem> items, JTextArea textArea)
+    {
+        textArea.setText("");
+        Highlighter highLighter = textArea.getHighlighter();
+        highLighter.removeAllHighlights();
+        int index = 0;
+        for (textBoundedItem item : items) {
+            textArea.append(item.toString());
+            if (item.getHighlightFlag() == true) {
+                try {
+                    highLighter.addHighlight(index, index + item.getLength() - 1, new DefaultHighlighter.DefaultHighlightPainter(item.getColor()));
+                }
+                catch (BadLocationException exception) {
+
+                }
+            }
+            index += item.getLength();
+        }
+    }
 }

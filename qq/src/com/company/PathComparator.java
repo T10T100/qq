@@ -3,6 +3,7 @@ package com.company;
 import sun.management.*;
 import sun.security.timestamp.Timestamper;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -78,12 +79,26 @@ public class PathComparator {
         return system.toString();
     }
 
+    public ArrayList<textBoundedItem> getTextItems ()
+    {
+        ArrayList<textBoundedItem> items = new ArrayList<>();
+
+        items.add(new textBoundedItem("Watch time : " + this.printTime(this.timeEnd - this.timeStart), true, Color.LIGHT_GRAY));
+        items.add(new textBoundedItem("Watched :    " + Long.toString(this.watched) + " Paths",      true, Color.LIGHT_GRAY));
+        items.add(new textBoundedItem("Total Size : " + this.printSize(this.totalSize),                true, Color.CYAN));
+
+        for (pathCompareKey key : keys) {
+            items.addAll(key.getTextItems());
+        }
+        return items;
+    }
+
     @Override
     public String toString()
     {
 
         String output = "Watch time : " + this.printTime(this.timeEnd - this.timeStart) + "\n";
-        output += "Watched : \"" + Long.toString(this.watched) + "\" paths;\n" +
+        output += "Watched : \"" + Long.toString(this.watched) + "\" Paths\n" +
                   "Total Size : " + this.printSize(this.totalSize) + "\n\n";
         for (pathCompareKey key : keys) {
             output += key.toString();
@@ -93,20 +108,19 @@ public class PathComparator {
 
     private String printSize (long size)
     {
-        String s;
+        char prefix = ' ';
         if (size > 2000000000) {
             size /= 1000000000;
-            s = "GBytes";
+            prefix = 'G';
         } else if (size > 2000000) {
             size /= 1000000;
-            s = "MBytes";
+            prefix = 'M';
         } else if (size > 20000) {
             size /= 1000;
-            s = "KBytes";
+            prefix = 'K';
         } else {
-            s = "Bytes";
         }
-        return "\"" + Long.toString(size) + "\" " + s;
+        return Long.toString(size) + ' ' + prefix + "Bytes";
     }
 
     public String printTime (long nanos)

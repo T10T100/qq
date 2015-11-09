@@ -1,5 +1,8 @@
 package com.company;
 
+import java.awt.*;
+import java.util.ArrayList;
+
 /**
  * Created by k on 06.11.2015.
  */
@@ -67,22 +70,29 @@ public class pathCompareKey {
 
     private String printSize (long size)
     {
-        String s;
+        char prefix = ' ';
         if (size > 2000000000) {
             size /= 1000000000;
-            s = "GBytes";
+            prefix = 'G';
         } else if (size > 2000000) {
             size /= 1000000;
-            s = "MBytes";
+            prefix = 'M';
         } else if (size > 20000) {
             size /= 1000;
-            s = "KBytes";
+            prefix = 'K';
         } else {
-            s = "Bytes";
         }
-        return "\"" + Long.toString(size) + "\" " + s;
+        return Long.toString(size) + ' ' + prefix + "Bytes";
     }
 
+    public ArrayList<textBoundedItem> getTextItems ()
+    {
+        ArrayList<textBoundedItem> items = new ArrayList<>();
+        items.add(new textBoundedItem(this.key.toString(), true, Color.pink));
+        items.add(new textBoundedItem("Matched :         " + Integer.toString(this.matched) + " Paths"));
+        items.add(new textBoundedItem("Size of matched : " + this.printSize(this.matchedSize), true, Color.CYAN));
+        return items;
+    }
 
     @Override
     public String toString()
