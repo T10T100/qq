@@ -21,7 +21,7 @@ public class KeyParser {
     {
         String garbage = "[garbage]";
         ArrayList<String> output = new ArrayList<>();
-
+        Word Pattern;
 
         ArrayList<Word> templates = this.getArrayOfWords(in, '<', '>');
         if (templates.isEmpty() == false) {
@@ -50,6 +50,13 @@ public class KeyParser {
         }
 
         comparator.setUp(keys);
+        String arg[];
+        for (Word w : patterns) {
+            arg = w.getFromValueOnce('\"', '\"');
+            w.setValue(arg[1]);
+            w.addArg(arg[0]);
+            w.removeSpacesFromWord();
+        }
 
         output.add("Keys : ");
         for (Word w : keys) {

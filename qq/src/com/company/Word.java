@@ -20,11 +20,15 @@ public class Word {
     {
         this.value = string;
         this.splitValueAndSet(splitter);
+        this.bounds = new ArrayList<>();
+        this.args = new ArrayList<>();
     }
     public Word (Word word)
     {
         this.name = new String(word.name);
         this.value = new String(word.value);
+        this.bounds = new ArrayList<>();
+        this.args = new ArrayList<>();
     }
     public Word (ArrayList<Word> words)
     {
@@ -38,6 +42,8 @@ public class Word {
         }
         this.name = words.get(0).name;
         this.value = words.get(0).value;
+        this.bounds = new ArrayList<>();
+        this.args = new ArrayList<>();
     }
     public  Word (String... strings)
     {
@@ -48,21 +54,29 @@ public class Word {
         for (int i = 2; i < length; i++) {
             this.args.add(i, new String(strings[i]));
         }
+        this.bounds = new ArrayList<>();
+        this.args = new ArrayList<>();
     }
     public Word (String name, String value)
     {
         this.name = new String(name);
         this.value = new String(value);
+        this.bounds = new ArrayList<>();
+        this.args = new ArrayList<>();
     }
     public Word (String value)
     {
         this.value = new String(value);
         this.name = "[name]";
+        this.bounds = new ArrayList<>();
+        this.args = new ArrayList<>();
     }
     public Word ()
     {
         this.name = "[name]";
         this.value = "[value]";
+        this.bounds = new ArrayList<>();
+        this.args = new ArrayList<>();
     }
 
     private String[] split (char[] parsing, char splitter)
@@ -173,12 +187,11 @@ public class Word {
     }
     private String[] getFromOnce (char[] parsing, char begin, char end)
     {
-        int i = 0;
         String[] output = {new String(""), new String("")};
         char separator = begin;
         int bufferIndex = 1;
         boolean copyAble = true;
-        do {
+        for (int i = 0; i < parsing.length; i++) {
             if (parsing[i] == separator && copyAble == true) {
                 if (bufferIndex == 1) {
                     separator = end;
@@ -190,7 +203,7 @@ public class Word {
             } else {
                 output[bufferIndex] += parsing[i];
             }
-        } while (++i < parsing.length);
+        }
         return output;
     }
     public String[] getFromNameOnce (char begin, char end)
@@ -494,6 +507,21 @@ public class Word {
         }
     }
 
+    public void addArg (String arg)
+    {
+        this.args.add(arg);
+    }
+
+    public void removeAllArgs ()
+    {
+        this.args.removeAll(this.args);
+    }
+
+    public String getArg (int index)
+    {
+        return this.args.get(index);
+    }
+
     public void setBounds(ArrayList<Word> bounds)
     {
         this.bounds = bounds;
@@ -512,6 +540,12 @@ public class Word {
     @Override
     public String toString()
     {
-        return new String("[" + this.name + "] = [" + this.value + "]");
+        String args = "";
+        if (this.args != null) {
+            for (String arg : this.args) {
+                args += arg + ", ";
+            }
+        }
+        return new String("[" + this.name + "] = [" + this.value + "] : " + args);
     }
 }
