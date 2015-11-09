@@ -184,13 +184,7 @@ public class TreeManager {
             if (file.isDirectory()) {
                 createBranchAndInsertFromRoot(tree, node, true);
             } else {
-                if (comparator.compareAndCollect(file, true) == false) {
-                    node.setMatch(false);
-                    //this.remove(tree, node);
-                    return;
-                } else {
-                    node.setMatch(true);
-                }
+                comparator.compareAndCollect(file, true);
                 return;
             }
         }

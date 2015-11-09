@@ -6,34 +6,26 @@ package com.company;
 public class pathCompareKey {
     protected Word key;
     protected int matched;
-    protected int watched;
-    protected long totalSize;
     protected long matchedSize;
     protected int matchedToArgs;
 
     public pathCompareKey (Word key)
     {
         this.key = key;
-        this.watched = 0;
         this.matched = 0;
-        this.totalSize = 0;
         this.matchedSize = 0;
         this.matchedToArgs = 0;
     }
 
     public void clearAll ()
     {
-        this.watched = 0;
         this.matched = 0;
-        this.totalSize = 0;
         this.matchedSize = 0;
         this.matchedToArgs = 0;
     }
 
     private boolean compareToName (String name, long size)
     {
-        this.watched++;
-        this.totalSize += size;
         if (name.contains(key.getName()) == true) {
             this.matchedSize += size;
             this.matched++;
@@ -44,8 +36,6 @@ public class pathCompareKey {
 
     private boolean compareToValue (String value, long size)
     {
-        this.watched++;
-        this.totalSize += size;
         if (value.contains(key.getValue()) == true) {
             this.matchedSize += size;
             this.matched++;
@@ -98,14 +88,8 @@ public class pathCompareKey {
     public String toString()
     {
         String output = new String (this.key.toString() +
-                "\nWatched : \"" +
-                Integer.toString(this.watched) +
-                "\" Paths\nTotal Size : " +
-                this.printSize(this.totalSize) +
                 "\nMatched : \"" +
                 Integer.toString(this.matched) +
-                "\" Paths\nMissmatched : \"" +
-                Integer.toString(this.watched - this.matched) +
                 "\" Paths\nSize of matched : " +
                 this.printSize(this.matchedSize) +
                 "\n\n");
@@ -117,17 +101,11 @@ public class pathCompareKey {
         return matched;
     }
 
-    public int getWatched() {
-        return watched;
-    }
 
     public int getMatchedToArgs() {
         return matchedToArgs;
     }
 
-    public long getTotalSize() {
-        return totalSize;
-    }
 
     public void setKey(Word key) {
         this.key = key;
@@ -145,12 +123,5 @@ public class pathCompareKey {
         this.matchedToArgs = matchedToArgs;
     }
 
-    public void setTotalSize(long totalSize) {
-        this.totalSize = totalSize;
-    }
-
-    public void setWatched(int watched) {
-        this.watched = watched;
-    }
 
 }

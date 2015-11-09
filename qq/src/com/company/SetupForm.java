@@ -243,7 +243,7 @@ public class SetupForm extends JFrame {
                     for (String s : keyParser.parseToDefault(pathComparator, keyTexArea.getText())) {
                         parsedKeys.append(s + "\n");
                     }
-
+                    /*
                     Highlighter highLighter = keyTexArea.getHighlighter();
                     Highlighter.HighlightPainter highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.orange);
                     try {
@@ -252,6 +252,7 @@ public class SetupForm extends JFrame {
                     catch (BadLocationException exception) {
 
                     }
+                    */
                 }
             }
         });
