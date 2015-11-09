@@ -45,6 +45,7 @@ public class SetupForm extends JFrame {
     private JButton expandAllButton;
     private JButton buttonCollapseAll;
     private JTextArea parsedKeys;
+    private JTextField searchField;
 
     private TreeManager treeManager;
     private PathIconManager iconManager;
@@ -260,7 +261,15 @@ public class SetupForm extends JFrame {
             }
         });
 
-
+        keyTexArea.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                if (e.getSource() == keyTexArea) {
+                    keyTexArea.selectAll();
+                }
+            }
+        });
 
         watchMode.addActionListener(new ActionListener() {
             @Override
@@ -320,6 +329,27 @@ public class SetupForm extends JFrame {
             }
         });
 
+        searchField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                super.keyTyped(e);
+                if (e.getSource() == searchField) {
+                    searchProcess(outputTextArea, searchField);
+                    searchProcess(parsedKeys, searchField);
+                }
+            }
+        });
+
+        searchField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                if (e.getSource() == searchField) {
+                    searchField.selectAll();
+                }
+            }
+        });
+
         setVisible(true);
     }
 
@@ -349,5 +379,33 @@ public class SetupForm extends JFrame {
             }
             index += item.getLength();
         }
+    }
+
+    private String searchProcess (JTextArea textArea, JTextField textField)
+    {
+        Highlighter highLighter = textArea.getHighlighter();
+        highLighter.removeAllHighlights();
+        String input = textArea.getText();
+        if (input.isEmpty() == true) {
+            return "Empty input!";
+        }
+        String keyWord = textField.getText();
+        if (keyWord.isEmpty() == true) {
+            return "No key!";
+        }
+        int watchIndex = input.indexOf(keyWord);
+        int keyWordSize = keyWord.length();
+
+        while (watchIndex >= 0) {
+            try {
+                highLighter.addHighlight(watchIndex, watchIndex + keyWordSize, new DefaultHighlighter.DefaultHighlightPainter(Color.pink));
+            }
+            catch (BadLocationException exception) {
+
+            }
+            watchIndex = input.indexOf(keyWord, watchIndex + 1);
+        }
+
+        return keyWord;
     }
 }

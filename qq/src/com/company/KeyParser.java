@@ -45,7 +45,7 @@ public class KeyParser {
             w.removeSpacesFromWord();
         }
         for (Word key : keys) {
-            key.removeSpacesFromValue();
+            key.removeSpacesFromWord();
             key.insertWordValueToNameBetween(templates, '[', ']');
         }
 
