@@ -30,7 +30,6 @@ public class TreeManager {
     private PathIconManager iconManager;
     private JProgressBar guiBar;
     boolean endOfWatch;
-    private runnableProcessWatch threadToWatch;
 
     private PathTreeNode createBranchFromPath (PathTreeNode rootNode, Path path)
     {
@@ -196,14 +195,12 @@ public class TreeManager {
 
     public String watchAllLeafsInTree (JTree tree, PathComparator comparator, boolean watchAll)
     {
-        if (threadToWatch == null) {
-            threadToWatch = new runnableProcessWatch();
-            threadToWatch.start();
-        }
         DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
         PathTreeNode root = (PathTreeNode)model.getRoot();
         comparator.setTimeStart(System.nanoTime());
+        guiBar.setIndeterminate(true);
         this.recursiveScan(tree, root, comparator, watchAll);
+        guiBar.setIndeterminate(false);
         comparator.setTimeEnd(Math.abs(System.nanoTime()));
         return "Succeed";
     }
@@ -250,26 +247,4 @@ public class TreeManager {
         this.guiBar = bar;
     }
 
-    public class runnableProcessWatch extends Thread {
-        @Override
-        public void run () {
-            guiBar.setIndeterminate(true);
-            while (endOfWatch == false) {
-                sleepSafe(1000, 0);
-            }
-            guiBar.setIndeterminate(false);
-            guiBar.setValue(0);
-
-            sleepSafe(1, 0);
-        }
-
-        public void sleepSafe(long m, int n)
-        {
-            try {
-                sleep(m, n);
-            } catch (InterruptedException e) {
-
-            }
-        }
-    }
 }

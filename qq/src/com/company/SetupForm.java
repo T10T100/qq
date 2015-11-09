@@ -46,6 +46,7 @@ public class SetupForm extends JFrame {
     private JButton buttonCollapseAll;
     private JTextArea parsedKeys;
     private JTextField searchField;
+    private JCheckBox watchOnCapitalsCheckBox;
 
     private TreeManager treeManager;
     private PathIconManager iconManager;
@@ -227,11 +228,13 @@ public class SetupForm extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 treeManager.collapseAll(tree1);
                 pathComparator.resetAll();
+                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 treeManager.watchAllLeafsInTree(tree1, pathComparator, true);
+                setCursor(Cursor.getDefaultCursor());
                 tree1.repaint();
                 treeManager.expandRows(tree1);
-                //outputTextArea.setText(pathComparator.toString());
                 printWithHighlight(pathComparator.getTextItems(), outputTextArea);
+                searchField.setFocusCycleRoot(true);
             }
         });
 
@@ -267,6 +270,15 @@ public class SetupForm extends JFrame {
                 super.mouseEntered(e);
                 if (e.getSource() == keyTexArea) {
                     keyTexArea.selectAll();
+                    setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                if (e.getSource() == keyTexArea) {
+                    setCursor(Cursor.getDefaultCursor());
                 }
             }
         });
@@ -342,10 +354,20 @@ public class SetupForm extends JFrame {
 
         searchField.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseEntered(MouseEvent e) {
+             public void mouseEntered(MouseEvent e) {
                 super.mouseEntered(e);
                 if (e.getSource() == searchField) {
                     searchField.selectAll();
+                    setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                super.mouseEntered(e);
+                if (e.getSource() == searchField) {
+                    setCursor(Cursor.getDefaultCursor());
                 }
             }
         });
