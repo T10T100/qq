@@ -80,6 +80,8 @@ public class SetupForm extends JFrame {
             "hfile.jpg"
     };
 
+    private ArrayList<Color> highlightColors;
+
 
     public SetupForm ()
     {
@@ -90,6 +92,13 @@ public class SetupForm extends JFrame {
         Dimension d = new Dimension(800, 500);
         this.setSize(d);
         this.setBackground(Color.DARK_GRAY);
+
+        highlightColors = new ArrayList<>();
+        highlightColors.add(Color.ORANGE);
+        highlightColors.add(Color.CYAN);
+        highlightColors.add(Color.magenta);
+        highlightColors.add(Color.PINK);
+        highlightColors.add(Color.RED);
 
         parsedKeys.setEditable(false);
         outputTextArea.setEditable(false);
@@ -350,7 +359,7 @@ public class SetupForm extends JFrame {
                 super.keyTyped(e);
                 if (e.getSource() == searchField) {
                     searchProcess(outputTextArea, searchField);
-                    searchProcess(parsedKeys, searchField);
+                    //searchProcess(parsedKeys, searchField);
                 }
             }
         });
@@ -406,47 +415,36 @@ public class SetupForm extends JFrame {
 
     private String searchProcess (JTextArea textArea, JTextField textField)
     {
-        Highlighter highLighter = textArea.getHighlighter();
-        highLighter.removeAllHighlights();
-        String input = textArea.getText();
-        if (input.isEmpty() == true) {
-            return "Empty input!";
-        }
-        if (textField.getText().length() == 0) {
-            return "nothing to search for!";
-        }
-        Word keyWords = new Word(textField.getText());
-        int keyWordSize;
-        int watchIndex = 0;
-        ArrayList<Color> colors = new ArrayList<>();
-        colors.add(Color.ORANGE);
-        colors.add(Color.CYAN);
-        colors.add(Color.magenta);
-        colors.add(Color.PINK);
-        colors.add(Color.RED);
 
-        Iterator<Color> it = colors.iterator();
-        Highlighter keysHighlighter = textField.getHighlighter();
-        keysHighlighter.removeAllHighlights();
-        int keyIndex = 0;
-        Color tColor = Color.WHITE;
-        Word word;
-        char superChar = '0';
-        for (String text : keyWords.getArrayFromValue(',')) {
+        String input = textArea.getText();
+        if (input.isEmpty() == true || textField.getText().isEmpty() == true) {
+            return "null";
+        }
+
+        Word inputWord = new Word(textField.getText());
+        inputWord.removeSpacesFromWord();
+
+        textArea.getHighlighter().removeAllHighlights();
+        textField.getHighlighter().removeAllHighlights();
+
+        ArrayList<TextMark> keyMarks = new ArrayList<>();
+        ArrayList<TextMark> matchedMarks = new ArrayList<>();
+
+        Iterator<Color> it = highlightColors.iterator();
+        int keyLastPosition = 0;
+        Color keyHighColor = Color.WHITE;
+        for (String text : inputWord.getArrayFromValue(',')) {
             if (it.hasNext() == false) {
-                it = colors.iterator();
+                it = highlightColors.iterator();
+            } else {
+                keyHighColor = it.next();
             }
-            tColor = it.next();
             if (text.isEmpty() == false) {
-                if (text.contains("<") == true) {
-                    superChar = '<';
-                } else if (text.contains(">") == true) {
-                    superChar = '>';
-                } else if (text.contains("=") == true) {
-                    superChar = '=';
-                }
-                if (superChar != '0') {
-                    word = new Word(text, superChar);
+
+                keyMarks.add(new TextMark(keyLastPosition, keyLastPosition + text.length() + 1, keyHighColor));
+                Word word;
+                if (text.contains("<")) {
+                    word = new Word(text, '<');
                     if (word.getValue().length() == 0 || word.getName().length() == 0) {
                         continue;
                     }
@@ -454,54 +452,33 @@ public class SetupForm extends JFrame {
                     long bottomValue = Long.parseLong(word.getName());
                     long topValue = Long.parseLong(word.getValue());
                     Word inputNumbers = new Word(input);
-                    ArrayList<Word.BoundedNumber> numbers = new ArrayList<>();
                     for (Word.BoundedNumber num : inputNumbers.getIntegersFromValue()) {
-                        switch (superChar){
-                            case '<' :
-                                if (bottomValue < num.getNumber() && num.getNumber() < topValue) {
-                                    numbers.add(num);
-                                }
-                                break;
-                            case '>' :
-                                if (bottomValue > num.getNumber() && num.getNumber() > topValue) {
-                                    numbers.add(num);
-                                }
-                                break;
-                            case '=' :
-                                if (bottomValue < num.getNumber() || num.getNumber() > topValue) {
-                                    numbers.add(num);
-                                }
-                                break;
-                        }
-
-                    }
-                    for (Word.BoundedNumber num : numbers) {
-                        try {
-                            highLighter.addHighlight(num.getStartIndex(), num.getEndIndex(), new DefaultHighlighter.DefaultHighlightPainter(tColor));
-                        } catch (BadLocationException exception) {
-
+                        if (bottomValue < num.getNumber() && num.getNumber() < topValue) {
+                            matchedMarks.add(new TextMark(num.getStartIndex(), num.getEndIndex(), keyHighColor));
                         }
                     }
                 } else {
-                    watchIndex = input.indexOf(text);
-                    keyWordSize = text.length();
-                    try {
-                        keysHighlighter.addHighlight(keyIndex, keyIndex + keyWordSize + 1, new DefaultHighlighter.DefaultHighlightPainter(tColor));
-                    } catch (BadLocationException exception) {
-
+                    for (int index = input.indexOf(text); index >= 0; index = input.indexOf(text, index + 1)) {
+                        matchedMarks.add(new TextMark(index, index + text.length(), keyHighColor));
                     }
-                    while (watchIndex >= 0) {
-                        try {
-                            highLighter.addHighlight(watchIndex, watchIndex + keyWordSize, new DefaultHighlighter.DefaultHighlightPainter(tColor));
-                        } catch (BadLocationException exception) {
-
-                        }
-                        watchIndex = input.indexOf(text, watchIndex + 1);
-                    }
-                    keyIndex += keyWordSize + 1;
                 }
+
+                keyLastPosition += text.length() + 1;
             }
         }
+        this.addHighlighters(textField.getHighlighter(), keyMarks);
+        this.addHighlighters(textArea.getHighlighter(), matchedMarks);
         return "!";
+    }
+
+    public void addHighlighters (Highlighter highLighter, ArrayList<TextMark> marks)
+    {
+        for (TextMark mark : marks) {
+            try {
+                highLighter.addHighlight(mark.getStart(), mark.getEnd(), mark.getHighLight());
+            } catch (BadLocationException exception) {
+
+            }
+        }
     }
 }
