@@ -60,11 +60,13 @@ public class KeyParser {
                         int startIndex = (int)start;
                         int endIndex = (int)end;
                         if (startIndex <= endIndex) {
-                            for (int i = startIndex; i < endIndex; i++) {
+                            for (int i = startIndex; i <= endIndex; i++) {
                                 keys.add(new Word(Character.toString((char)i), Integer.toString(i)));
                             }
                         } else {
-                            /*Error!*/
+                            for (int i = endIndex; i <= startIndex; i++) {
+                                keys.add(new Word(Character.toString((char)i), Integer.toString(i)));
+                            }
                         }
                     }
                 }
