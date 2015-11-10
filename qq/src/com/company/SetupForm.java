@@ -1,29 +1,20 @@
 package com.company;
 
-import com.sun.java.swing.plaf.motif.MotifTextUI;
-import com.sun.org.apache.xalan.internal.xsltc.dom.ArrayNodeListIterator;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ComboBoxBase;
-import javafx.scene.control.cell.ComboBoxListCell;
-import javafx.scene.control.cell.ComboBoxTableCell;
-import sun.misc.*;
-import sun.misc.Queue;
+import sun.font.FontFamily;
 
-import javax.print.DocFlavor;
 import javax.swing.*;
-import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.event.TreeWillExpandListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.ExpandVetoException;
-import javax.xml.stream.events.Characters;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -50,12 +41,20 @@ public class SetupForm extends JFrame {
     private JTextArea parsedKeys;
     private JTextField searchField;
     private JCheckBox watchOnCapitalsCheckBox;
+    private JButton saveAsButton;
+    private JCheckBox useTxtAsBufferCheckBox;
+    private JLabel selectedFileInfo;
+    private JFileChooser saveOutputAsDialog;
 
     private TreeManager treeManager;
     private PathIconManager iconManager;
     private PathComparator pathComparator;
 
     private KeyParser keyParser;
+
+    private boolean bufferedModeEnabled;
+    private boolean bufferNeedRefresh;
+    private Path textHashPath;
 
     private String[] hddRoots = {
             "A:/",
@@ -87,6 +86,9 @@ public class SetupForm extends JFrame {
     public SetupForm ()
     {
         super("Frame");
+        bufferedModeEnabled = false;
+        bufferNeedRefresh = true;
+        textHashPath = null;
         setContentPane(contentPanel);
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -104,6 +106,9 @@ public class SetupForm extends JFrame {
         highlightColors.add(new Color(195, 17, 76, 150));
         highlightColors.add(new Color(38, 17, 117, 100));
         highlightColorsIterator = highlightColors.iterator();
+
+        saveOutputAsDialog = new JFileChooser();
+        saveAsButton.setEnabled(false);
 
         parsedKeys.setEditable(false);
         outputTextArea.setEditable(false);
@@ -133,6 +138,42 @@ public class SetupForm extends JFrame {
 
         pathComparator = new PathComparator();
 
+        saveAsButton.setIcon(iconManager.fileIcon);
+
+        useTxtAsBufferCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == useTxtAsBufferCheckBox) {
+                    if (useTxtAsBufferCheckBox.isSelected() == true) {
+                        bufferedModeEnabled = true;
+                        saveAsButton.setEnabled(true);
+                    } else {
+                        bufferedModeEnabled = false;
+                        saveAsButton.setEnabled(false);
+                        selectedFileInfo.setText("");
+                    }
+                }
+            }
+        });
+
+        saveAsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == saveAsButton) {
+                    int i = saveOutputAsDialog.showOpenDialog(SetupForm.this);
+                    File file = saveOutputAsDialog.getSelectedFile();
+                    if (file != null) {
+                        if (file.getName().contains("txt")) {
+                            if (Files.isWritable(file.toPath()) == true) {
+                                textHashPath = file.toPath();
+                                selectedFileInfo.setText(file.getName());
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
         treeToPick.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -143,6 +184,8 @@ public class SetupForm extends JFrame {
 
                         } else if (SwingUtilities.isRightMouseButton(e) == true) {
                                 //treeManager.createBranchAndInsertFromSelected(treeToPick, pathComparator, false);
+                                selectedFileInfo.setBackground(Color.RED);
+                                bufferNeedRefresh = true;
                                 ((DefaultTreeModel) tree1.getModel()).insertNodeInto(nodeSelected, (PathTreeNode) tree1.getModel().getRoot(), 0);
                         }
                     }
@@ -240,13 +283,23 @@ public class SetupForm extends JFrame {
             }
         });
 
-        stepButton.addActionListener(new ActionListener() {
+        stepButton.addActionListener(new ActionListener() {         /**Watch there**/
             @Override
             public void actionPerformed(ActionEvent e) {
                 treeManager.collapseAll(tree1);
                 pathComparator.resetAll();
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                treeManager.watchAllLeafsInTree(tree1, pathComparator, true);
+                if (bufferedModeEnabled == true) {
+                    if (bufferNeedRefresh == true) {
+                        bufferNeedRefresh = false;
+                        treeManager.watchAllLeafsInTree(tree1, pathComparator, bufferedModeEnabled, textHashPath);
+                    } else {
+                        treeManager.watchAllLeafsInBuffer(pathComparator, textHashPath);
+                    }
+                } else {
+                    treeManager.watchAllLeafsInTree(tree1, pathComparator, bufferedModeEnabled, textHashPath);
+                }
+                selectedFileInfo.setBackground(new Color (100, 200, 130, 200));
                 setCursor(Cursor.getDefaultCursor());
                 tree1.repaint();
                 treeManager.expandRows(tree1);
@@ -260,13 +313,11 @@ public class SetupForm extends JFrame {
             public void keyReleased(KeyEvent e) {
                 super.keyTyped(e);
                 if (e.getSource() == keyTexArea) {
-
                     outputTextArea.setText("");
                     parsedKeys.setText("");
                     for (String s : keyParser.parseToDefault(pathComparator, keyTexArea.getText())) {
                         parsedKeys.append(s + "\n");
                     }
-
                 }
             }
         });
@@ -410,7 +461,6 @@ public class SetupForm extends JFrame {
 
     private String searchProcess (JTextArea textArea, JTextField textField)
     {
-
         String input = textArea.getText();
         if (input.isEmpty() == true || textField.getText().isEmpty() == true) {
             return "null";
