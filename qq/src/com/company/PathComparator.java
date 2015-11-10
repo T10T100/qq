@@ -85,7 +85,7 @@ public class PathComparator {
 
         items.add(new textBoundedItem("Watch time : " + this.printTime(this.timeEnd - this.timeStart), Color.LIGHT_GRAY));
         items.add(new textBoundedItem("Watched :    " + Long.toString(this.watched) + " Paths", Color.LIGHT_GRAY));
-        items.add(new textBoundedItem("Total Size : " + this.printSize(this.totalSize), Color.CYAN));
+        items.add(new textBoundedItem("Total Size : " + this.printSize(this.totalSize), new Color(227, 73, 59, 150)));
 
         for (pathCompareKey key : keys) {
             items.addAll(key.getTextItems());

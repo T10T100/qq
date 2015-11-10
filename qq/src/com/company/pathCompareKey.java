@@ -88,9 +88,9 @@ public class pathCompareKey {
     public ArrayList<textBoundedItem> getTextItems ()
     {
         ArrayList<textBoundedItem> items = new ArrayList<>();
-        items.add(new textBoundedItem(this.key.toString(), Color.pink));
+        items.add(new textBoundedItem(this.key.toString(), new Color(38, 17, 117, 100)));
         items.add(new textBoundedItem("Matched :         " + Integer.toString(this.matched) + " Paths"));
-        items.add(new textBoundedItem("Size of matched : " + this.printSize(this.matchedSize) + '\n', Color.CYAN));
+        items.add(new textBoundedItem("Size of matched : " + this.printSize(this.matchedSize) + '\n', new Color(124, 130, 30, 150)));
         return items;
     }
 

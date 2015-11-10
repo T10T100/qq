@@ -81,6 +81,7 @@ public class SetupForm extends JFrame {
     };
 
     private ArrayList<Color> highlightColors;
+    private Iterator<Color> highlightColorsIterator;
 
 
     public SetupForm ()
@@ -94,11 +95,15 @@ public class SetupForm extends JFrame {
         this.setBackground(Color.DARK_GRAY);
 
         highlightColors = new ArrayList<>();
-        highlightColors.add(Color.ORANGE);
-        highlightColors.add(Color.CYAN);
-        highlightColors.add(Color.magenta);
-        highlightColors.add(Color.PINK);
-        highlightColors.add(Color.RED);
+        highlightColors.add(new Color(127, 61, 23, 150));
+        highlightColors.add(new Color(227, 73, 59, 150));
+        highlightColors.add(new Color(238, 186, 76, 150));
+        highlightColors.add(new Color(33, 182, 168, 150));
+        highlightColors.add(new Color(127, 23, 105, 150));
+        highlightColors.add(new Color(124, 130, 30, 150));
+        highlightColors.add(new Color(195, 17, 76, 150));
+        highlightColors.add(new Color(38, 17, 117, 100));
+        highlightColorsIterator = highlightColors.iterator();
 
         parsedKeys.setEditable(false);
         outputTextArea.setEditable(false);
@@ -262,16 +267,6 @@ public class SetupForm extends JFrame {
                         parsedKeys.append(s + "\n");
                     }
 
-                    /*
-                    Highlighter highLighter = keyTexArea.getHighlighter();
-                    Highlighter.HighlightPainter highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.orange);
-                    try {
-                        highLighter.addHighlight(0, (keyTexArea.getText()).length(), highlightPainter);
-                    }
-                    catch (BadLocationException exception) {
-
-                    }
-                    */
                 }
             }
         });
@@ -430,15 +425,12 @@ public class SetupForm extends JFrame {
         ArrayList<TextMark> keyMarks = new ArrayList<>();
         ArrayList<TextMark> matchedMarks = new ArrayList<>();
 
-        Iterator<Color> it = highlightColors.iterator();
         int keyLastPosition = 0;
-        Color keyHighColor = Color.WHITE;
+        Color keyHighColor;
+        this.getFirstTextHighlightColor();
+
         for (String text : inputWord.getArrayFromValue(',')) {
-            if (it.hasNext() == false) {
-                it = highlightColors.iterator();
-            } else {
-                keyHighColor = it.next();
-            }
+            keyHighColor = this.getNextTextHighlightColor();
             if (text.isEmpty() == false) {
 
                 keyMarks.add(new TextMark(keyLastPosition, keyLastPosition + text.length() + 1, keyHighColor));
@@ -480,5 +472,18 @@ public class SetupForm extends JFrame {
 
             }
         }
+    }
+
+    public Color getNextTextHighlightColor ()
+    {
+        if (highlightColorsIterator.hasNext() == false) {
+            highlightColorsIterator = highlightColors.iterator();
+        }
+        return highlightColorsIterator.next();
+    }
+    public Color getFirstTextHighlightColor ()
+    {
+        highlightColorsIterator = highlightColors.iterator();
+        return highlightColorsIterator.next();
     }
 }

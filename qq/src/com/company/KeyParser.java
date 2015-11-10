@@ -48,8 +48,8 @@ public class KeyParser {
             w.removeSpacesFromWord();
         }
         for (Word key : keys) {
-            key.removeSpacesFromWord();
             key.insertWordValueToNameBetween(templates, '[', ']');
+            key.removeSpacesFromWord();
         }
 
         comparator.setUp(keys);
