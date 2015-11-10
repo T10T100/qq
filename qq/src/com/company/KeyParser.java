@@ -1,11 +1,6 @@
 package com.company;
 
-import java.lang.reflect.Array;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by Afony on 01.11.2015.
@@ -23,8 +18,6 @@ public class KeyParser {
     {
         String garbage = "[garbage]";
         ArrayList<String> output = new ArrayList<>();
-        Word pattern = new Word();
-        boolean setted = false;
 
         ArrayList<Word> templates = this.getArrayOfWords(in, '<', '>');
         if (templates.isEmpty() == false) {
@@ -52,47 +45,61 @@ public class KeyParser {
             key.removeSpacesFromWord();
         }
 
-        comparator.setUp(keys);
         ArrayList<String> arg;
-        setted = false;
         for (Word w : patterns) {
-            arg = w.getArrayFromValue('\"', '\"');
+            arg = w.getArrayFromValue('\'', '\'');
             w.setValue(arg.remove(0));
             w.setArgs(arg);
             w.removeSpacesFromWord();
-            if (w.name.contentEquals("out")) {
-                pattern = w;
-                setted = true;
+            if (w.name.contentEquals("key")) {
+                for (String key : w.getArgs()) {
+                    int indexOf = key.indexOf("-");
+                    if (indexOf >= 1 && key.length() >= 3) {
+                        char start = key.charAt(indexOf - 1);
+                        char end = key.charAt(indexOf + 1);
+                        int startIndex = (int)start;
+                        int endIndex = (int)end;
+                        if (startIndex <= endIndex) {
+                            for (int i = startIndex; i < endIndex; i++) {
+                                keys.add(new Word(Character.toString((char)i), Integer.toString(i)));
+                            }
+                        } else {
+                            /*Error!*/
+                        }
+                    }
+                }
             } else {
-                setted = false;
+
             }
         }
 
-
+        comparator.setUp(keys);
 
         output.add("Keys : ");
         for (Word w : keys) {
-            output.add(new String(w.toString()));
+            output.add(w.toString());
         }
         output.add("\nTemplates : ");
         for (Word w :templates) {
-            output.add(new String(w.toString()));
+            output.add(w.toString());
         }
         output.add("\nPatterns : ");
         for (Word w :patterns) {
-            output.add(new String(w.toString()));
+            output.add(w.toString());
         }
         output.add("\nGarbage : ");
-        output.add(new String(garbage));
+        output.add(garbage);
         output.add("\nSystem : ");
         output.add(comparator.getSystemInfo());
         output.add("\nRegular : \n");
+        /*
         if (setted == true) {
             Pattern p = Pattern.compile(pattern.value);
             Matcher matcher = p.matcher("0123456789abcd");
             output.add("0123456789abcd\n");
             output.add(matcher.toMatchResult().toString());
         }
+        */
         return output;
     }
 

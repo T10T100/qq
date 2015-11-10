@@ -1,12 +1,7 @@
 package com.company;
 
-import jdk.nashorn.internal.runtime.regexp.joni.MatcherFactory;
-import sun.misc.Regexp;
-
 import java.util.ArrayList;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 /**
  * Created by Afony on 04.11.2015.
@@ -16,6 +11,16 @@ public class Word {
     ArrayList<String> args;
     String name;
     String value;
+
+    public Word (char name, char value)
+    {
+        this.name = "";
+        this.value = "";
+        this.name += name;
+        this.value += value;
+        this.bounds = new ArrayList<>();
+        this.args = new ArrayList<>();
+    }
     public Word (String string, char splitter)
     {
         this.value = string;
@@ -25,16 +30,16 @@ public class Word {
     }
     public Word (Word word)
     {
-        this.name = new String(word.name);
-        this.value = new String(word.value);
+        this.name = word.name;
+        this.value = word.value;
         this.bounds = new ArrayList<>();
         this.args = new ArrayList<>();
     }
     public Word (ArrayList<Word> words)
     {
         if (words.isEmpty() == true) {
-            this.name = new String("[name]");
-            this.value = new String("[value]");
+            this.name = "[name]";
+            this.value = "[value]";
             return;
         }
         for (Word word : words) {
@@ -48,25 +53,25 @@ public class Word {
     public  Word (String... strings)
     {
         int length = strings.length;
-        this.name = new String(strings[0]);
-        this.value = new String(strings[1]);
+        this.name = strings[0];
+        this.value = strings[1];
         length = strings.length - length;
         for (int i = 2; i < length; i++) {
-            this.args.add(i, new String(strings[i]));
+            this.args.add(i, strings[i]);
         }
         this.bounds = new ArrayList<>();
         this.args = new ArrayList<>();
     }
     public Word (String name, String value)
     {
-        this.name = new String(name);
-        this.value = new String(value);
+        this.name = name;
+        this.value = value;
         this.bounds = new ArrayList<>();
         this.args = new ArrayList<>();
     }
     public Word (String value)
     {
-        this.value = new String(value);
+        this.value = value;
         this.name = "[name]";
         this.bounds = new ArrayList<>();
         this.args = new ArrayList<>();
@@ -82,7 +87,7 @@ public class Word {
     private String[] split (char[] parsing, char splitter)
     {
         String[] outputCollection = new String[2];
-        String bag = new String();
+        String bag = "";
         int i = 0;
         for (; i < parsing.length; i++) {
             if (parsing[i] == splitter) {
@@ -110,7 +115,7 @@ public class Word {
 
     private String splitTo (char[] parsing, char splitter)
     {
-        String bag = new String();
+        String bag = "";
         for (int i = 0; i < parsing.length; i++) {
             if (parsing[i] == splitter) {
                 break;
@@ -130,7 +135,7 @@ public class Word {
 
     private String splitFrom (char[] parsing, char splitter)
     {
-        String bag = new String();
+        String bag = "";
         int index = 0;
         for (int i = 0; i < parsing.length; i++) {
             if (parsing[i] == splitter) {
@@ -187,7 +192,7 @@ public class Word {
     }
     private String[] getFromOnce (char[] parsing, char begin, char end)
     {
-        String[] output = {new String(""), new String("")};
+        String[] output = {"", ""};
         char separator = begin;
         int bufferIndex = 1;
         boolean copyAble = true;
@@ -231,7 +236,7 @@ public class Word {
     private ArrayList<String> getArray (char[] parsing, char begin, char end)
     {
         ArrayList<String> outputCollection = new ArrayList<>();
-        String[] bag = {new String(""), new String("")};
+        String[] bag = {"", ""};
         int copyIndex = 1;
         char separator = begin;
         for (int i = 0; i < parsing.length; i++) {
@@ -243,13 +248,13 @@ public class Word {
                 } else {
                     copyIndex = 1;
                     separator = begin;
-                    outputCollection.add(new String(bag[0]));
+                    outputCollection.add(bag[0]);
                 }
             } else {
                 bag[copyIndex] += parsing[i];
             }
         }
-        outputCollection.add(0, new String(bag[1]));
+        outputCollection.add(0, bag[1]);
         return outputCollection;
     }
 
@@ -308,13 +313,13 @@ public class Word {
         String bag = "";
         for (int i = 0; i < parsing.length; i++) {
             if (parsing[i] == delimiter) {
-                outputCollection.add(new String(bag));
+                outputCollection.add(bag);
                 bag = "";
             } else {
                 bag += parsing[i];
             }
         }
-        outputCollection.add(new String(bag));
+        outputCollection.add(bag);
         return outputCollection;
     }
     public ArrayList<String> getArrayFromName (char delimiter)
@@ -581,12 +586,12 @@ public class Word {
 
     public void setName(String name)
     {
-        this.name = new String(name);
+        this.name = name;
     }
 
     public void setValue(String value)
     {
-        this.value = new String(value);
+        this.value = value;
     }
 
     @Override
@@ -598,7 +603,7 @@ public class Word {
                 args += arg + ", ";
             }
         }
-        return new String("[" + this.name + "] = [" + this.value + "] : " + args);
+        return "[" + this.name + "] = [" + this.value + "] : " + args;
     }
 
     public class BoundedNumber {
