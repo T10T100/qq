@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -81,10 +82,9 @@ public class PathsHashFile {
             logFile = null;
             return;
         }
-        logFile = new File(this.toString() + File.separator + name);
+        logFile = new File(location.toPath().toString() + File.separator + name);
         try {
             if (Files.deleteIfExists(logFile.toPath()) == true) {
-
             } else {
 
             }
@@ -109,29 +109,33 @@ public class PathsHashFile {
         this.book.clear();
         this.book.put(name, new ArrayList<>());
         this.paragraph = this.book.get(name);
+        this.needUpdate = true;
     }
 
     public void setNewParagraph (String name)
     {
-        this.book.put(name, new ArrayList<>());
+        this.book.put(name + "\r\n", new ArrayList<>());
         this.paragraph = this.book.get(name);
+        this.needUpdate = true;
     }
 
     public void writeToCurrentParagraph (String line)
     {
-        this.paragraph.add(line + "\n");
+        this.paragraph.add(line + "\r\n");
+        this.needUpdate = true;
     }
 
     public void writeToExistingParagraph (String name, String line)
     {
         ArrayList<String> par = this.book.get(name);
         if (par != null) {
-            par.add(line);
+            par.add(line + "\r\n");
         } else {
             par = new ArrayList<>();
-            par.add(line);
+            par.add(line + "\r\n");
             this.book.put(name, par);
         }
+        this.needUpdate = true;
     }
 
 
@@ -139,13 +143,9 @@ public class PathsHashFile {
 
     public void writeTolog ()
     {
-        if (this.isExist() == false) {
+        if (this.exist == false) {
             return;
         }
-        if (this.needUpdate == true) {
-            return;
-        }
-
         FileWriter writer = null;
         try {
             writer = new FileWriter(this.logFile, true);
@@ -155,7 +155,20 @@ public class PathsHashFile {
         if (writer == null) {
             return;
         }
-        for (ArrayList<String> paragraph : this.book.values()) {
+        String name = "";
+        ArrayList<String> paragraph;
+        Iterator<String> keyIterator = this.book.keySet().iterator();
+        while (keyIterator.hasNext() == true) {
+            name = keyIterator.next();
+            paragraph = this.book.get(name);
+            if (paragraph == null) {
+                continue;
+            }
+            try {
+                writer.write("\r\n" + name + "\r\n");
+            } catch (IOException exception) {
+
+            }
             for (String line : paragraph) {
                 try {
                     writer.write(line);
@@ -164,6 +177,17 @@ public class PathsHashFile {
                 }
             }
         }
+        try {
+            writer.close();
+        } catch (IOException exception) {
+
+        }
+        this.needUpdate = false;
+    }
+
+    public void setNeedUpdate (boolean value)
+    {
+        this.needUpdate = value;
     }
 
     public boolean isNeedUpdate()

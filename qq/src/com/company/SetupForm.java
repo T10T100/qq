@@ -105,9 +105,15 @@ public class SetupForm extends JFrame {
         highlightColors.add(new Color(38, 17, 117, 100));
         highlightColorsIterator = highlightColors.iterator();
 
+        int directorySelect = 0;
         saveOutputAsDialog = new JFileChooser();
         saveOutputAsDialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        saveOutputAsDialog.showOpenDialog(SetupForm.this);
+        directorySelect = saveOutputAsDialog.showOpenDialog(SetupForm.this);
+
+        if (directorySelect == JFileChooser.CANCEL_OPTION || directorySelect == JFileChooser.ERROR_OPTION) {
+            this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        }
+
         logObject = new PathsHashFile("log.txt", saveOutputAsDialog.getSelectedFile());
 
 
@@ -255,7 +261,7 @@ public class SetupForm extends JFrame {
                 treeManager.collapseAll(tree1);
                 pathComparator.resetAll();
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                //treeManager.watchAllLeafsInTree(tree1, pathComparator, bufferedModeEnabled, textHashPath);
+                treeManager.watchAllLeafsInTree(tree1, pathComparator, logObject);
                 setCursor(Cursor.getDefaultCursor());
                 tree1.repaint();
                 treeManager.expandRows(tree1);

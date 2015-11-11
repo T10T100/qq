@@ -167,7 +167,7 @@ public class TreeManager {
         return createBranchAndInsertFromRoot(tree, (PathTreeNode) tree.getLastSelectedPathComponent(), compFlag);
     }
 
-    private void recursiveScan (JTree tree, PathTreeNode node, PathComparator comparator, boolean watchAll)
+    private void recursiveScan (JTree tree, PathTreeNode node, PathComparator comparator)
     {
         int items = 0;
         if (node == null) {
@@ -189,11 +189,11 @@ public class TreeManager {
         }
         items = node.getChildCount();
         for (int i = 0; i < items; i++) {
-            recursiveScan(tree, (PathTreeNode)node.getChildAt(i), comparator, watchAll);
+            recursiveScan(tree, (PathTreeNode)node.getChildAt(i), comparator);
         }
     }
 
-    private void recursiveScan (JTree tree, PathTreeNode node, PathComparator comparator, ArrayList<String> output)
+    private void recursiveScan (JTree tree, PathTreeNode node, PathComparator comparator, PathsHashFile hashFile)
     {
         int items = 0;
         if (node == null) {
@@ -206,49 +206,30 @@ public class TreeManager {
                 return;
             }
             File file = new File(o.toString());
-            if (file.isDirectory()) {
+            if (file.isDirectory() == true) {
                 createBranchAndInsertFromRoot(tree, node, true);
+                hashFile.setNewParagraph(file.toPath().toString());
             } else {
                 comparator.compareAndCollect(file, true);
-                output.add(file.toPath().toString());
+                hashFile.writeToExistingParagraph(file.toPath().getParent().toString(), file.getName());
                 return;
             }
         }
         items = node.getChildCount();
         for (int i = 0; i < items; i++) {
-            recursiveScan(tree, (PathTreeNode)node.getChildAt(i), comparator, output);
+            recursiveScan(tree, (PathTreeNode)node.getChildAt(i), comparator, hashFile);
         }
     }
 
-    public String watchAllLeafsInTree (JTree tree, PathComparator comparator, boolean useBuffer, Path pathToWrite)
+    public String watchAllLeafsInTree (JTree tree, PathComparator comparator, PathsHashFile hashFile)
     {
         DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
         PathTreeNode root = (PathTreeNode)model.getRoot();
         comparator.setTimeStart(System.nanoTime());
         guiBar.setIndeterminate(true);
-        ArrayList<String> output = new ArrayList<>();
-        if (useBuffer == true) {
-            this.recursiveScan(tree, root, comparator, output);
-            if (pathToWrite !=  null) {
-                if (Files.exists(pathToWrite) == true) {
-                    if (Files.isDirectory(pathToWrite) == false) {
-                        if (Files.isWritable(pathToWrite) == true) {
-                            String S = "";
-                            for (String s : output) {
-                                S += s + "\n";
-                            }
-                            try {
-                                Files.write(pathToWrite, S.getBytes());
-                            } catch (IOException exception) {
 
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            this.recursiveScan(tree, root, comparator, true);
-        }
+        this.recursiveScan(tree, root, comparator, hashFile);
+        hashFile.writeTolog();
         guiBar.setIndeterminate(false);
         comparator.setTimeEnd(Math.abs(System.nanoTime()));
         return "Succeed";
