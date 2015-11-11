@@ -12,74 +12,53 @@ public class Word {
     String name;
     String value;
 
-    public Word (char name, char value)
-    {
-        this.name = "";
-        this.value = "";
-        this.name += name;
-        this.value += value;
-        this.bounds = new ArrayList<>();
-        this.args = new ArrayList<>();
-    }
     public Word (String string, char splitter)
     {
-        this.value = string;
+        this.setValue(string);
         this.splitValueAndSet(splitter);
         this.bounds = new ArrayList<>();
         this.args = new ArrayList<>();
     }
     public Word (Word word)
     {
-        this.name = word.name;
-        this.value = word.value;
+        this.setName(word.name);
+        this.setValue(word.value);
         this.bounds = new ArrayList<>();
         this.args = new ArrayList<>();
     }
     public Word (ArrayList<Word> words)
     {
+        this.bounds = new ArrayList<>();
+        this.args = new ArrayList<>();
         if (words.isEmpty() == true) {
-            this.name = "[name]";
-            this.value = "[value]";
+            this.setName("[name]");
+            this.setValue("[value]");
             return;
+        } else {
+            this.bounds.addAll(words);
+            this.setName(words.get(0).name);
+            this.setValue(words.get(0).value);
+            words.remove(0);
         }
-        for (Word word : words) {
-            this.bounds.add(word);
-        }
-        this.name = words.get(0).name;
-        this.value = words.get(0).value;
-        this.bounds = new ArrayList<>();
-        this.args = new ArrayList<>();
-    }
-    public  Word (String... strings)
-    {
-        int length = strings.length;
-        this.name = strings[0];
-        this.value = strings[1];
-        length = strings.length - length;
-        for (int i = 2; i < length; i++) {
-            this.args.add(i, strings[i]);
-        }
-        this.bounds = new ArrayList<>();
-        this.args = new ArrayList<>();
     }
     public Word (String name, String value)
     {
-        this.name = name;
-        this.value = value;
+        this.setName(name);
+        this.setValue(value);
         this.bounds = new ArrayList<>();
         this.args = new ArrayList<>();
     }
     public Word (String value)
     {
-        this.value = value;
-        this.name = "[name]";
+        this.setValue(value);
+        this.setName("[name]");
         this.bounds = new ArrayList<>();
         this.args = new ArrayList<>();
     }
     public Word ()
     {
-        this.name = "[name]";
-        this.value = "[value]";
+        this.setName("[name]");
+        this.setValue("[value]");
         this.bounds = new ArrayList<>();
         this.args = new ArrayList<>();
     }

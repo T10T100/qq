@@ -41,9 +41,7 @@ public class SetupForm extends JFrame {
     private JTextArea parsedKeys;
     private JTextField searchField;
     private JCheckBox watchOnCapitalsCheckBox;
-    private JButton saveAsButton;
-    private JCheckBox useTxtAsBufferCheckBox;
-    private JLabel selectedFileInfo;
+
     private JFileChooser saveOutputAsDialog;
 
     private TreeManager treeManager;
@@ -52,9 +50,9 @@ public class SetupForm extends JFrame {
 
     private KeyParser keyParser;
 
-    private boolean bufferedModeEnabled;
     private boolean bufferNeedRefresh;
-    private Path textHashPath;
+
+    PathsHashFile logObject;
 
     private String[] hddRoots = {
             "A:/",
@@ -86,15 +84,15 @@ public class SetupForm extends JFrame {
     public SetupForm ()
     {
         super("Frame");
-        bufferedModeEnabled = false;
         bufferNeedRefresh = true;
-        textHashPath = null;
         setContentPane(contentPanel);
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Dimension d = new Dimension(800, 500);
         this.setSize(d);
         this.setBackground(Color.DARK_GRAY);
+
+
 
         highlightColors = new ArrayList<>();
         highlightColors.add(new Color(127, 61, 23, 150));
@@ -108,7 +106,10 @@ public class SetupForm extends JFrame {
         highlightColorsIterator = highlightColors.iterator();
 
         saveOutputAsDialog = new JFileChooser();
-        saveAsButton.setEnabled(false);
+        saveOutputAsDialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        saveOutputAsDialog.showOpenDialog(SetupForm.this);
+        logObject = new PathsHashFile("log.txt", saveOutputAsDialog.getSelectedFile());
+
 
         parsedKeys.setEditable(false);
         outputTextArea.setEditable(false);
@@ -138,41 +139,7 @@ public class SetupForm extends JFrame {
 
         pathComparator = new PathComparator();
 
-        saveAsButton.setIcon(iconManager.fileIcon);
 
-        useTxtAsBufferCheckBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == useTxtAsBufferCheckBox) {
-                    if (useTxtAsBufferCheckBox.isSelected() == true) {
-                        bufferedModeEnabled = true;
-                        saveAsButton.setEnabled(true);
-                    } else {
-                        bufferedModeEnabled = false;
-                        saveAsButton.setEnabled(false);
-                        selectedFileInfo.setText("");
-                    }
-                }
-            }
-        });
-
-        saveAsButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == saveAsButton) {
-                    int i = saveOutputAsDialog.showOpenDialog(SetupForm.this);
-                    File file = saveOutputAsDialog.getSelectedFile();
-                    if (file != null) {
-                        if (file.getName().contains("txt")) {
-                            if (Files.isWritable(file.toPath()) == true) {
-                                textHashPath = file.toPath();
-                                selectedFileInfo.setText(file.getName());
-                            }
-                        }
-                    }
-                }
-            }
-        });
 
         treeToPick.addMouseListener(new MouseListener() {
             @Override
@@ -184,7 +151,6 @@ public class SetupForm extends JFrame {
 
                         } else if (SwingUtilities.isRightMouseButton(e) == true) {
                                 //treeManager.createBranchAndInsertFromSelected(treeToPick, pathComparator, false);
-                                selectedFileInfo.setBackground(Color.RED);
                                 bufferNeedRefresh = true;
                                 ((DefaultTreeModel) tree1.getModel()).insertNodeInto(nodeSelected, (PathTreeNode) tree1.getModel().getRoot(), 0);
                         }
@@ -289,17 +255,7 @@ public class SetupForm extends JFrame {
                 treeManager.collapseAll(tree1);
                 pathComparator.resetAll();
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                if (bufferedModeEnabled == true) {
-                    if (bufferNeedRefresh == true) {
-                        bufferNeedRefresh = false;
-                        treeManager.watchAllLeafsInTree(tree1, pathComparator, bufferedModeEnabled, textHashPath);
-                    } else {
-                        treeManager.watchAllLeafsInBuffer(pathComparator, textHashPath);
-                    }
-                } else {
-                    treeManager.watchAllLeafsInTree(tree1, pathComparator, bufferedModeEnabled, textHashPath);
-                }
-                selectedFileInfo.setBackground(new Color (100, 200, 130, 200));
+                //treeManager.watchAllLeafsInTree(tree1, pathComparator, bufferedModeEnabled, textHashPath);
                 setCursor(Cursor.getDefaultCursor());
                 tree1.repaint();
                 treeManager.expandRows(tree1);
