@@ -69,11 +69,11 @@ public class PathsHashFile {
             }
     }
 
-    public PathsHashFile (String name, File location)
+    public PathsHashFile (String name, File location, String bookName)
     {
         this.book = new HashMap<>();
-        this.book.put("$", new ArrayList<>());
-        this.paragraph = book.get("$");
+        this.book.put(bookName, new ArrayList<>());
+        this.paragraph = book.get(bookName);
         this.exist = false;
         this.needUpdate = true;
         this.name = name;
@@ -141,7 +141,7 @@ public class PathsHashFile {
 
 
 
-    public void writeTolog ()
+    public void writeToLog ()
     {
         if (this.exist == false) {
             return;

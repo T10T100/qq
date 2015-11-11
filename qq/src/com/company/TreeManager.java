@@ -15,9 +15,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Time;
+import java.text.DateFormat;
+import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +35,7 @@ public class TreeManager {
     private PathIconManager iconManager;
     private JProgressBar guiBar;
     boolean endOfWatch;
+    DateFormat dateFormat;
 
     private PathTreeNode createBranchFromPath (PathTreeNode rootNode, Path path)
     {
@@ -60,6 +66,7 @@ public class TreeManager {
     public TreeManager(PathIconManager iconManager)
     {
         this.iconManager = iconManager;
+        dateFormat = new SimpleDateFormat("YYYY:MM:dd : HH:mm:ss");
         endOfWatch = true;
     }
 
@@ -193,7 +200,7 @@ public class TreeManager {
         }
     }
 
-    private void recursiveScan (JTree tree, PathTreeNode node, PathComparator comparator, PathsHashFile hashFile)
+    private void recursiveScan (JTree tree, PathTreeNode node, PathComparator comparator, PathsHashFile logFile, PathsHashFile hashFile)
     {
         int items = 0;
         if (node == null) {
@@ -208,28 +215,30 @@ public class TreeManager {
             File file = new File(o.toString());
             if (file.isDirectory() == true) {
                 createBranchAndInsertFromRoot(tree, node, true);
-                hashFile.setNewParagraph(file.toPath().toString());
+                logFile.setNewParagraph(printDirToLog(file, dateFormat));
             } else {
                 comparator.compareAndCollect(file, true);
-                hashFile.writeToExistingParagraph(file.toPath().getParent().toString(), file.getName());
+                logFile.writeToExistingParagraph(file.toPath().getParent().toString(), this.printFileToLog(file, dateFormat));
+                hashFile.writeToCurrentParagraph(this.printFileToHash(file, dateFormat));
                 return;
             }
         }
         items = node.getChildCount();
         for (int i = 0; i < items; i++) {
-            recursiveScan(tree, (PathTreeNode)node.getChildAt(i), comparator, hashFile);
+            recursiveScan(tree, (PathTreeNode)node.getChildAt(i), comparator, logFile, hashFile);
         }
     }
 
-    public String watchAllLeafsInTree (JTree tree, PathComparator comparator, PathsHashFile hashFile)
+    public String watchAllLeafsInTree (JTree tree, PathComparator comparator, PathsHashFile logFile, PathsHashFile hashFile)
     {
         DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
         PathTreeNode root = (PathTreeNode)model.getRoot();
         comparator.setTimeStart(System.nanoTime());
         guiBar.setIndeterminate(true);
 
-        this.recursiveScan(tree, root, comparator, hashFile);
-        hashFile.writeTolog();
+        this.recursiveScan(tree, root, comparator, logFile, hashFile);
+        logFile.writeToLog();
+        hashFile.writeToLog();
         guiBar.setIndeterminate(false);
         comparator.setTimeEnd(Math.abs(System.nanoTime()));
         return "Succeed";
@@ -296,6 +305,32 @@ public class TreeManager {
     public void setGuiBarToShow (JProgressBar bar)
     {
         this.guiBar = bar;
+    }
+
+    private String printFileToLog (File file, DateFormat format)
+    {
+        return  file.getName() +
+                " *-----* " +
+                (file.isHidden() == true ? "Hidden file, " : "File, ") +
+                "Size- <" + file.length() + "> Bytes, modified- " +
+                format.format(new Date(file.lastModified()));
+    }
+    private String printFileToHash (File file, DateFormat format)
+    {
+        return  "<" + file.getName() + ">"+
+                "<" + file.length() + "><" +
+                format.format(new Date(file.lastModified())) + ">";
+    }
+    private String printDirToLog (File file, DateFormat format)
+    {
+        return  file.toPath().toString() +
+                " *-----* Folder, " + "modified- " +
+                format.format(new Date(file.lastModified()));
+    }
+    private String printDirToHash (File file, DateFormat format)
+    {
+        return  "<" + file.getName() + ">"+
+                format.format(new Date(file.lastModified())) + ">";
     }
 
 }

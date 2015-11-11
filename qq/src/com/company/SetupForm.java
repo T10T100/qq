@@ -50,9 +50,9 @@ public class SetupForm extends JFrame {
 
     private KeyParser keyParser;
 
-    private boolean bufferNeedRefresh;
 
     PathsHashFile logObject;
+    PathsHashFile hashObject;
 
     private String[] hddRoots = {
             "A:/",
@@ -83,8 +83,7 @@ public class SetupForm extends JFrame {
 
     public SetupForm ()
     {
-        super("Frame");
-        bufferNeedRefresh = true;
+        super("Path Watcher");
         setContentPane(contentPanel);
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -114,8 +113,8 @@ public class SetupForm extends JFrame {
             this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
         }
 
-        logObject = new PathsHashFile("log.txt", saveOutputAsDialog.getSelectedFile());
-
+        logObject = new PathsHashFile("log.txt", saveOutputAsDialog.getSelectedFile(), "$LOG$");
+        hashObject = new PathsHashFile("hash.txt", saveOutputAsDialog.getSelectedFile(), "$HASH$");
 
         parsedKeys.setEditable(false);
         outputTextArea.setEditable(false);
@@ -157,7 +156,6 @@ public class SetupForm extends JFrame {
 
                         } else if (SwingUtilities.isRightMouseButton(e) == true) {
                                 //treeManager.createBranchAndInsertFromSelected(treeToPick, pathComparator, false);
-                                bufferNeedRefresh = true;
                                 ((DefaultTreeModel) tree1.getModel()).insertNodeInto(nodeSelected, (PathTreeNode) tree1.getModel().getRoot(), 0);
                         }
                     }
@@ -261,7 +259,7 @@ public class SetupForm extends JFrame {
                 treeManager.collapseAll(tree1);
                 pathComparator.resetAll();
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                treeManager.watchAllLeafsInTree(tree1, pathComparator, logObject);
+                treeManager.watchAllLeafsInTree(tree1, pathComparator, logObject, hashObject);
                 setCursor(Cursor.getDefaultCursor());
                 tree1.repaint();
                 treeManager.expandRows(tree1);
