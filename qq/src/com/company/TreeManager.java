@@ -117,7 +117,7 @@ public class TreeManager {
         return root;
     }
 
-    public PathTreeNode createBranchAndInsertFromRoot (JTree tree, PathTreeNode root, boolean compFlag)
+    public PathTreeNode createBranchAndInsertFromRoot (JTree tree, PathTreeNode root)
     {
         if (root == null) {
             return new PathTreeNode("null");
@@ -139,7 +139,6 @@ public class TreeManager {
 
         PathTreeNode childNode = null;
         File file = null;
-        this.endOfWatch = false;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
             for (Path child : stream) {
                 file = child.toFile();
@@ -155,23 +154,18 @@ public class TreeManager {
                         }
                     }
                     model.insertNodeInto(childNode, root, 0);
-
                 }
-
             }
         }
         catch (IOException e){
-            System.out.println(e.getCause().toString());
+
         }
-        this.endOfWatch = true;
         return root;
-
-
     }
 
-    public PathTreeNode createBranchAndInsertFromSelected (JTree tree, boolean compFlag)
+    public PathTreeNode createBranchAndInsertFromSelected (JTree tree)
     {
-        return createBranchAndInsertFromRoot(tree, (PathTreeNode) tree.getLastSelectedPathComponent(), compFlag);
+        return createBranchAndInsertFromRoot(tree, (PathTreeNode) tree.getLastSelectedPathComponent());
     }
 
     private void recursiveScan (JTree tree, PathTreeNode node, PathComparator comparator)
@@ -188,7 +182,7 @@ public class TreeManager {
             }
             File file = new File(o.toString());
             if (file.isDirectory()) {
-                createBranchAndInsertFromRoot(tree, node, true);
+                createBranchAndInsertFromRoot(tree, node);
             } else {
                 comparator.compareAndCollect(file, true);
                 return;
@@ -214,7 +208,7 @@ public class TreeManager {
             }
             File file = new File(o.toString());
             if (file.isDirectory() == true) {
-                createBranchAndInsertFromRoot(tree, node, true);
+                createBranchAndInsertFromRoot(tree, node);
                 logFile.setNewParagraph(printDirToLog(file, dateFormat));
             } else {
                 comparator.compareAndCollect(file, true);
@@ -229,46 +223,40 @@ public class TreeManager {
         }
     }
 
-    public String watchAllLeafsInTree (JTree tree, PathComparator comparator, PathsHashFile logFile, PathsHashFile hashFile)
+    public void watchAllLeafsInTree (JTree tree, PathComparator comparator, boolean hashReady, PathsHashFile logFile, PathsHashFile hashFile)
     {
-        DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
-        PathTreeNode root = (PathTreeNode)model.getRoot();
-        comparator.setTimeStart(System.nanoTime());
-        guiBar.setIndeterminate(true);
+        if (hashReady == false) {
+            DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+            PathTreeNode root = (PathTreeNode) model.getRoot();
+            comparator.setTimeStart(System.nanoTime());
 
-        this.recursiveScan(tree, root, comparator, logFile, hashFile);
-        logFile.writeToLog();
-        hashFile.writeToLog();
-        guiBar.setIndeterminate(false);
-        comparator.setTimeEnd(Math.abs(System.nanoTime()));
-        return "Succeed";
+            this.recursiveScan(tree, root, comparator, logFile, hashFile);
+
+            logFile.writeToLog();logFile.clear();
+            hashFile.writeToLog();hashFile.clear();
+            comparator.setTimeEnd(System.nanoTime());
+        } else {
+            this.watchAllLeafsInBuffer(comparator, hashFile);
+        }
     }
 
-    public String watchAllLeafsInBuffer (PathComparator comparator, Path pathToWrite)
+    public void watchAllLeafsInBuffer (PathComparator comparator, PathsHashFile hashFile)
     {
         Word word = new Word();
-        if (Files.exists((pathToWrite)) == true) {
-            if (Files.isDirectory((pathToWrite)) == false) {
-                if (Files.isReadable((pathToWrite)) == true) {
-                    try {
-                        for (String string : Files.readAllLines(pathToWrite)) {
-                            comparator.compareAndCollect(new File(string), true);
-                        }
-                    } catch (IOException exception) {
-
-                    }
-                }
+        ArrayList<String> attributes;
+        comparator.setTimeStart(System.nanoTime());
+        for (String line : hashFile.readLineByLine()) {
+            word.setValue(line);
+            attributes = word.getArrayFromValue('<', '>');
+            if (attributes.size() >= 2) {
+                comparator.compareAndCollect(attributes.get(1), Long.parseLong(attributes.get(2)), true);
             }
         }
-        comparator.setTimeStart(System.nanoTime());
-        comparator.setTimeEnd(Math.abs(System.nanoTime()));
-        return "Succeed";
+        comparator.setTimeEnd(System.nanoTime());
     }
 
     public long expandRows (JTree tree)
     {
-        DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
-        PathTreeNode Root = (PathTreeNode)model.getRoot();
         long rowCount = tree.getRowCount();
         for (long i = 0; i < rowCount; i++) {
             tree.expandRow((int)i);
@@ -289,8 +277,6 @@ public class TreeManager {
 
     public void collapseAll (JTree tree)
     {
-        DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
-        PathTreeNode Root = (PathTreeNode)model.getRoot();
         long rowCount = tree.getRowCount();
         long oldRowCount = rowCount;
         do {

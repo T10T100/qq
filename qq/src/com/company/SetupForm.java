@@ -51,8 +51,10 @@ public class SetupForm extends JFrame {
     private KeyParser keyParser;
 
 
+
     PathsHashFile logObject;
     PathsHashFile hashObject;
+    private boolean hashReady;
 
     private String[] hddRoots = {
             "A:/",
@@ -115,6 +117,7 @@ public class SetupForm extends JFrame {
 
         logObject = new PathsHashFile("log.txt", saveOutputAsDialog.getSelectedFile(), "$LOG$");
         hashObject = new PathsHashFile("hash.txt", saveOutputAsDialog.getSelectedFile(), "$HASH$");
+        hashReady = false;
 
         parsedKeys.setEditable(false);
         outputTextArea.setEditable(false);
@@ -155,8 +158,8 @@ public class SetupForm extends JFrame {
                         if (SwingUtilities.isLeftMouseButton(e) == true) {
 
                         } else if (SwingUtilities.isRightMouseButton(e) == true) {
-                                //treeManager.createBranchAndInsertFromSelected(treeToPick, pathComparator, false);
-                                ((DefaultTreeModel) tree1.getModel()).insertNodeInto(nodeSelected, (PathTreeNode) tree1.getModel().getRoot(), 0);
+                            ((DefaultTreeModel) tree1.getModel()).insertNodeInto(nodeSelected, (PathTreeNode) tree1.getModel().getRoot(), 0);
+                            hashReady = false;
                         }
                     }
                 }
@@ -198,7 +201,7 @@ public class SetupForm extends JFrame {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
                 if (e.getSource() == treeToPick) {
-                    treeManager.createBranchAndInsertFromSelected(treeToPick, false);
+                    treeManager.createBranchAndInsertFromSelected(treeToPick);
                 }
             }
         });
@@ -248,7 +251,7 @@ public class SetupForm extends JFrame {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
                 if (e.getSource() == tree1) {
-                    treeManager.createBranchAndInsertFromSelected(tree1, true);
+                    treeManager.createBranchAndInsertFromSelected(tree1);
                 }
             }
         });
@@ -256,15 +259,15 @@ public class SetupForm extends JFrame {
         stepButton.addActionListener(new ActionListener() {         /**Watch there**/
             @Override
             public void actionPerformed(ActionEvent e) {
-                treeManager.collapseAll(tree1);
                 pathComparator.resetAll();
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                treeManager.watchAllLeafsInTree(tree1, pathComparator, logObject, hashObject);
+
+                treeManager.watchAllLeafsInTree(tree1, pathComparator, hashReady, logObject, hashObject);
+                hashReady = true;
+
                 setCursor(Cursor.getDefaultCursor());
-                tree1.repaint();
-                treeManager.expandRows(tree1);
                 printWithHighlight(pathComparator.getTextItems(), outputTextArea);
-                searchField.setFocusCycleRoot(true);
+                hashObject.setNeedUpdate(false);
             }
         });
 

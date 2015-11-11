@@ -7,10 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by k on 11.11.2015.
@@ -24,11 +21,11 @@ public class PathsHashFile {
 
     private Map<String, ArrayList<String>> book;
     private ArrayList<String> paragraph;
-    public PathsHashFile (String name, String location)
+    public PathsHashFile (String name, String location, String bookName)
     {
         this.book = new HashMap<>();
-        this.book.put("$", new ArrayList<>());
-        this.paragraph = book.get("$");
+        this.book.put(bookName, new ArrayList<>());
+        this.paragraph = book.get(bookName);
         this.exist = false;
         this.needUpdate = true;
         this.name = name;
@@ -109,20 +106,22 @@ public class PathsHashFile {
         this.book.clear();
         this.book.put(name, new ArrayList<>());
         this.paragraph = this.book.get(name);
-        this.needUpdate = true;
+    }
+
+    public void clear ()
+    {
+        this.book.clear();
     }
 
     public void setNewParagraph (String name)
     {
         this.book.put(name + "\r\n", new ArrayList<>());
         this.paragraph = this.book.get(name);
-        this.needUpdate = true;
     }
 
     public void writeToCurrentParagraph (String line)
     {
         this.paragraph.add(line + "\r\n");
-        this.needUpdate = true;
     }
 
     public void writeToExistingParagraph (String name, String line)
@@ -135,7 +134,6 @@ public class PathsHashFile {
             par.add(line + "\r\n");
             this.book.put(name, par);
         }
-        this.needUpdate = true;
     }
 
 
@@ -148,7 +146,7 @@ public class PathsHashFile {
         }
         FileWriter writer = null;
         try {
-            writer = new FileWriter(this.logFile, true);
+            writer = new FileWriter(this.logFile, false);
         } catch (IOException exception) {
 
         }
@@ -165,13 +163,13 @@ public class PathsHashFile {
                 continue;
             }
             try {
-                writer.write("\r\n" + name + "\r\n");
+                writer.append("\r\n" + name + "\r\n");
             } catch (IOException exception) {
 
             }
             for (String line : paragraph) {
                 try {
-                    writer.write(line);
+                    writer.append(line);
                 } catch (IOException exception) {
 
                 }
@@ -182,7 +180,20 @@ public class PathsHashFile {
         } catch (IOException exception) {
 
         }
-        this.needUpdate = false;
+    }
+
+    public List<String> readLineByLine ()
+    {
+        List<String> output = new ArrayList<>();
+        if (this.logFile == null) {
+            return output;
+        }
+        try {
+            output = Files.readAllLines(this.logFile.toPath());
+        } catch (IOException exception) {
+
+        }
+        return output;
     }
 
     public void setNeedUpdate (boolean value)

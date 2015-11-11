@@ -73,6 +73,16 @@ public class PathComparator {
         return true;
     }
 
+    public boolean compareAndCollect (String name, long size, boolean logic)
+    {
+        this.watched++;
+        this.totalSize += size;
+        for (pathCompareKey key : keys) {
+            key.compare(name, size, logic);
+        }
+        return true;
+    }
+
     public String getSystemInfo ()
     {
         FileSystem system = FileSystems.getDefault();
