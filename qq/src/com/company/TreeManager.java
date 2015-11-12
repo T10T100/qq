@@ -222,6 +222,32 @@ public class TreeManager {
             recursiveScan(tree, (PathTreeNode)node.getChildAt(i), comparator, logFile, hashFile);
         }
     }
+    private void recursiveScan (JTree tree, PathTreeNode node, PathComparator comparator, PathsHashFile hashFile)
+    {
+        int items = 0;
+        if (node == null) {
+            return;
+        }
+        Object o = null;
+        if (node.isLeaf() == true) {
+            o = node.getUserObject();
+            if (o == null) {
+                return;
+            }
+            File file = new File(o.toString());
+            if (file.isDirectory() == true) {
+                createBranchAndInsertFromRoot(tree, node);
+            } else {
+                comparator.compareAndCollect(file, true);
+                hashFile.writeToCurrentParagraph(this.printFileToHash(file, dateFormat));
+                return;
+            }
+        }
+        items = node.getChildCount();
+        for (int i = 0; i < items; i++) {
+            recursiveScan(tree, (PathTreeNode)node.getChildAt(i), comparator, hashFile);
+        }
+    }
 
     public void watchAllLeafsInTree (JTree tree, PathComparator comparator, boolean hashReady, PathsHashFile logFile, PathsHashFile hashFile)
     {
@@ -232,9 +258,27 @@ public class TreeManager {
 
             this.recursiveScan(tree, root, comparator, logFile, hashFile);
 
-            logFile.writeToLog();logFile.clear();
-            hashFile.writeToLog();hashFile.clear();
+            logFile.writeToLog();logFile.clear();logFile.setNewBook("$log$");
+            hashFile.writeToLog();hashFile.clear();hashFile.setNewBook("$hash$");
             comparator.setTimeEnd(System.nanoTime());
+        } else {
+            this.watchAllLeafsInBuffer(comparator, hashFile);
+        }
+    }
+    public void watchAllLeafsInTree (JTree tree, PathComparator comparator, boolean hashReady, PathsHashFile hashFile)
+    {
+        if (hashReady == false) {
+            DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+            PathTreeNode root = (PathTreeNode) model.getRoot();
+            //comparator.setTimeStart(System.nanoTime());
+
+            comparator.setSkipCompare(true);
+            this.recursiveScan(tree, root, comparator, hashFile);
+            comparator.setSkipCompare(false);
+            comparator.resetAll();
+            hashFile.writeToLog();hashFile.clear();hashFile.setNewBook("$hash$");
+            this.watchAllLeafsInBuffer(comparator, hashFile);
+            //comparator.setTimeEnd(System.nanoTime());
         } else {
             this.watchAllLeafsInBuffer(comparator, hashFile);
         }
@@ -245,6 +289,7 @@ public class TreeManager {
         Word word = new Word();
         ArrayList<String> attributes;
         comparator.setTimeStart(System.nanoTime());
+
         for (String line : hashFile.readLineByLine()) {
             word.setValue(line);
             attributes = word.getArrayFromValue('<', '>');

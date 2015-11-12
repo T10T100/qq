@@ -41,6 +41,7 @@ public class SetupForm extends JFrame {
     private JTextArea parsedKeys;
     private JTextField searchField;
     private JCheckBox watchOnCapitalsCheckBox;
+    private JCheckBox logOutEnable;
 
     private JFileChooser saveOutputAsDialog;
 
@@ -156,7 +157,9 @@ public class SetupForm extends JFrame {
                     PathTreeNode nodeSelected = new PathTreeNode((PathTreeNode) treeToPick.getLastSelectedPathComponent());
                     if (nodeSelected != null) {
                         if (SwingUtilities.isLeftMouseButton(e) == true) {
+                            if (e.getClickCount() >= 2) {
 
+                            }
                         } else if (SwingUtilities.isRightMouseButton(e) == true) {
                             ((DefaultTreeModel) tree1.getModel()).insertNodeInto(nodeSelected, (PathTreeNode) tree1.getModel().getRoot(), 0);
                             hashReady = false;
@@ -261,8 +264,11 @@ public class SetupForm extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 pathComparator.resetAll();
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-                treeManager.watchAllLeafsInTree(tree1, pathComparator, hashReady, logObject, hashObject);
+                if (logOutEnable.isSelected() == true) {
+                    treeManager.watchAllLeafsInTree(tree1, pathComparator, hashReady, logObject, hashObject);
+                } else {
+                    treeManager.watchAllLeafsInTree(tree1, pathComparator, hashReady, hashObject);
+                }
                 hashReady = true;
 
                 setCursor(Cursor.getDefaultCursor());

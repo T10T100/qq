@@ -25,14 +25,14 @@ public class PathComparator {
     private long timeEnd;
     private long totalSize;
     private long watched;
-    private long watchErrors;
+    private boolean skipCompare;
     ArrayList<pathCompareKey> keys = new ArrayList<>();
 
     public PathComparator ()
     {
         this.totalSize = 0;
         this.watched = 0;
-        this.watchErrors = 0;
+        this.skipCompare = false;
     }
 
     public void setUp (ArrayList<Word> words)
@@ -60,11 +60,13 @@ public class PathComparator {
         }
         this.watched = 0;
         this.totalSize = 0;
-        this.watchErrors = 0;
     }
 
     public boolean compareAndCollect (File file, boolean logic)
     {
+        if (this.skipCompare == true) {
+            return false;
+        }
         this.watched++;
         this.totalSize += file.length();
         for (pathCompareKey key : keys) {
@@ -75,6 +77,9 @@ public class PathComparator {
 
     public boolean compareAndCollect (String name, long size, boolean logic)
     {
+        if (this.skipCompare == true) {
+            return false;
+        }
         this.watched++;
         this.totalSize += size;
         for (pathCompareKey key : keys) {
@@ -141,5 +146,15 @@ public class PathComparator {
         int hours = (minutes / 60) % 24;
         LocalTime time = LocalTime.of(seconds, minutes, hours, 0);
         return time.toString();
+    }
+
+    public int getKeyCount ()
+    {
+        return keys.size();
+    }
+
+    public void setSkipCompare (boolean skip)
+    {
+        this.skipCompare = skip;
     }
 }
