@@ -27,13 +27,12 @@ public class SetupForm extends JFrame {
     private JTextArea keyTexArea;
     private JCheckBox watchMode;
     private JButton stepButton;
-    private JLabel labelforPath;
+    private JLabel labelToShowSatus;
     private JLabel labelToCompare;
     private JLabel labelToMode;
     private JTree treeToPick;
     private JLabel treeInfoLabel;
     private JTree tree1;
-    private JProgressBar progressBarScanStatus;
     private JCheckBox expandMode;
     private JButton resetButton;
     private JButton expandButton;
@@ -45,12 +44,13 @@ public class SetupForm extends JFrame {
 
     private JFileChooser saveOutputAsDialog;
 
+
+    private PathTreeCellRenderer cellTreeRenderer;
     private TreeManager treeManager;
     private PathIconManager iconManager;
     private PathComparator pathComparator;
 
     private KeyParser keyParser;
-
 
 
     PathsHashFile logObject;
@@ -85,8 +85,7 @@ public class SetupForm extends JFrame {
     private Iterator<Color> highlightColorsIterator;
 
 
-    public SetupForm ()
-    {
+    public SetupForm() {
         super("Path Watcher");
         setContentPane(contentPanel);
         pack();
@@ -96,333 +95,23 @@ public class SetupForm extends JFrame {
         this.setBackground(Color.DARK_GRAY);
 
 
-
-        highlightColors = new ArrayList<>();
-        highlightColors.add(new Color(127, 61, 23, 150));
-        highlightColors.add(new Color(227, 73, 59, 150));
-        highlightColors.add(new Color(238, 186, 76, 150));
-        highlightColors.add(new Color(33, 182, 168, 150));
-        highlightColors.add(new Color(127, 23, 105, 150));
-        highlightColors.add(new Color(124, 130, 30, 150));
-        highlightColors.add(new Color(195, 17, 76, 150));
-        highlightColors.add(new Color(38, 17, 117, 100));
-        highlightColorsIterator = highlightColors.iterator();
-
-        int directorySelect = 0;
-        saveOutputAsDialog = new JFileChooser();
-        saveOutputAsDialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        directorySelect = saveOutputAsDialog.showOpenDialog(SetupForm.this);
-
-        if (directorySelect == JFileChooser.CANCEL_OPTION || directorySelect == JFileChooser.ERROR_OPTION) {
-            this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-        }
-
-        logObject = new PathsHashFile("log.txt", saveOutputAsDialog.getSelectedFile(), "$log$");
-        hashObject = new PathsHashFile("hash.hash", saveOutputAsDialog.getSelectedFile(), "$hash$");
-        hashReady = false;
-        makeLog = false;
-
-        parsedKeys.setEditable(false);
-        outputTextArea.setEditable(false);
-
-        keyParser = new KeyParser();
-        keyTexArea.setText("'any'");
-        iconManager = new PathIconManager(iconsPath);
-
-        treeManager = new TreeManager(iconManager);
-
-        PathTreeCellRenderer cellTreeRenderer = new PathTreeCellRenderer(tree1, false);
-
-        treeToPick.setModel(new DefaultTreeModel(treeManager.makeTreeByName(hddRoots)));
-        treeToPick.setCellRenderer(new PathTreeCellRenderer(treeToPick, false));
-        treeToPick.setBackground(Color.WHITE);
-
-        tree1.setModel(new DefaultTreeModel(treeManager.makeTreeByName("")));
-        tree1.setCellRenderer(cellTreeRenderer);
-        tree1.setBackground(Color.WHITE);
-
-
-        progressBarScanStatus.setMinimum(0);
-        progressBarScanStatus.setMaximum(100);
-
-
-        treeManager.setGuiBarToShow(progressBarScanStatus);
-
-        pathComparator = new PathComparator();
-
-
-
-        treeToPick.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getSource() == treeToPick) {
-                    PathTreeNode nodeSelected = new PathTreeNode((PathTreeNode) treeToPick.getLastSelectedPathComponent());
-                    if (nodeSelected != null) {
-                        if (SwingUtilities.isLeftMouseButton(e) == true) {
-                            if (e.getClickCount() >= 2) {
-
-                            }
-                        } else if (SwingUtilities.isRightMouseButton(e) == true) {
-                            ((DefaultTreeModel) tree1.getModel()).insertNodeInto(nodeSelected, (PathTreeNode) tree1.getModel().getRoot(), 0);
-                            hashReady = false;
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-                if (e.getSource() == treeToPick) {
-                    try
-                    {
-                        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                    }catch(Exception ex){}
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (e.getSource() == treeToPick) {
-                    try
-                    {
-                        setCursor(Cursor.getDefaultCursor());
-                    }catch(Exception ex){}
-                }
-            }
-        });
-
-        treeToPick.addTreeSelectionListener(new TreeSelectionListener() {
-            @Override
-            public void valueChanged(TreeSelectionEvent e) {
-                if (e.getSource() == treeToPick) {
-                    treeManager.createBranchAndInsertFromSelected(treeToPick);
-                }
-            }
-        });
-
-        tree1.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getSource() == tree1) {
-                    if (SwingUtilities.isRightMouseButton(e)) {
-                        treeManager.removeSelected(tree1);
-                    }
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (e.getSource() == tree1) {
-                    try
-                    {
-                        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                    }catch(Exception ex){}
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (e.getSource() == tree1) {
-                    try
-                    {
-                        setCursor(Cursor.getDefaultCursor());
-                    }catch(Exception ex){}
-                }
-            }
-        });
-
-        tree1.addTreeSelectionListener(new TreeSelectionListener() {
-            @Override
-            public void valueChanged(TreeSelectionEvent e) {
-                if (e.getSource() == tree1) {
-                    treeManager.createBranchAndInsertFromSelected(tree1);
-                }
-            }
-        });
-
-        stepButton.addActionListener(new ActionListener() {         /**Watch there**/
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                pathComparator.resetAll();
-                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-                if (hashReady == false) {
-                    treeManager.makeHash(tree1, hashObject);
-                    hashReady = true;
-                }
-                treeManager.watchHash(pathComparator, makeLog, logObject, hashObject);
-
-                setCursor(Cursor.getDefaultCursor());
-                printWithHighlight(pathComparator.getTextItems(), outputTextArea);
-                hashObject.setNeedUpdate(false);
-            }
-        });
-
-        keyTexArea.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                super.keyTyped(e);
-                if (e.getSource() == keyTexArea) {
-                    outputTextArea.setText("");
-                    parsedKeys.setText("");
-                    for (String s : keyParser.parseToDefault(pathComparator, keyTexArea.getText())) {
-                        parsedKeys.append(s + "\n");
-                    }
-                }
-            }
-        });
-
-        keyTexArea.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                if (e.getSource() == keyTexArea) {
-                    keyTexArea.selectAll();
-                    setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                if (e.getSource() == keyTexArea) {
-                    setCursor(Cursor.getDefaultCursor());
-                }
-            }
-        });
-
-        watchMode.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == watchMode) {
-                    cellTreeRenderer.setLogic(watchMode.isSelected());
-                }
-            }
-        });
-
-        expandMode.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == expandMode) {
-                    cellTreeRenderer.setExpandlogic(expandMode.isSelected());
-                }
-            }
-        });
-
-        resetButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                pathComparator.resetAll();
-                outputTextArea.setText("0");
-                keyTexArea.setText("'any'");
-                tree1.setModel(new DefaultTreeModel(new PathTreeNode("Added")));
-                treeToPick.setModel(new DefaultTreeModel(treeManager.makeTreeByName(hddRoots)));
-            }
-        });
-
-        expandButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == expandButton) {
-                    treeManager.expandRows(tree1);
-                }
-            }
-        });
-
-        expandAllButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == expandAllButton) {
-                    treeManager.expandAll(tree1);
-                    tree1.setFocusable(true);
-                    tree1.setFocusCycleRoot(true);
-                }
-            }
-        });
-
-        buttonCollapseAll.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == buttonCollapseAll) {
-                    treeManager.collapseAll(tree1);
-                }
-            }
-        });
-
-        searchField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                super.keyTyped(e);
-                if (e.getSource() == searchField) {
-                    searchProcess(outputTextArea, searchField);
-                    //searchProcess(parsedKeys, searchField);
-                }
-            }
-        });
-
-        searchField.addMouseListener(new MouseAdapter() {
-            @Override
-             public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                if (e.getSource() == searchField) {
-                    searchField.selectAll();
-                    setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                super.mouseEntered(e);
-                if (e.getSource() == searchField) {
-                    setCursor(Cursor.getDefaultCursor());
-                }
-            }
-        });
-
-        logOutEnable.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == logOutEnable) {
-                    makeLog = logOutEnable.isSelected();
-                }
-            }
-        });
+        setUpInventory();
+        startUp();
+        initTreeOfRoots();
+        initTreeOfWatch();
+        initButtons();
+        initOthers();
 
         setVisible(true);
     }
 
 
-    public void doNothing ()
-    {
+    public void doNothing() {
 
     }
 
 
-
-    private void printWithHighlight (ArrayList<textBoundedItem> items, JTextArea textArea)
-    {
+    private void printWithHighlight(ArrayList<textBoundedItem> items, JTextArea textArea) {
         textArea.setText("");
         Highlighter highLighter = textArea.getHighlighter();
         highLighter.removeAllHighlights();
@@ -431,16 +120,14 @@ public class SetupForm extends JFrame {
             textArea.append(item.toString());
             try {
                 highLighter.addHighlight(index, index + item.getLength() - 1, item.getHighLight());
-            }
-            catch (BadLocationException exception) {
+            } catch (BadLocationException exception) {
 
             }
             index += item.getLength();
         }
     }
 
-    private String searchProcess (JTextArea textArea, JTextField textField)
-    {
+    private String searchProcess(JTextArea textArea, JTextField textField) {
         String input = textArea.getText();
         if (input.isEmpty() == true || textField.getText().isEmpty() == true) {
             return "null";
@@ -493,8 +180,7 @@ public class SetupForm extends JFrame {
         return "!";
     }
 
-    public void addHighlighters (Highlighter highLighter, ArrayList<TextMark> marks)
-    {
+    public void addHighlighters(Highlighter highLighter, ArrayList<TextMark> marks) {
         for (TextMark mark : marks) {
             try {
                 highLighter.addHighlight(mark.getStart(), mark.getEnd(), mark.getHighLight());
@@ -504,17 +190,326 @@ public class SetupForm extends JFrame {
         }
     }
 
-    public Color getNextTextHighlightColor ()
-    {
+    public Color getNextTextHighlightColor() {
         if (highlightColorsIterator.hasNext() == false) {
             highlightColorsIterator = highlightColors.iterator();
         }
         return highlightColorsIterator.next();
     }
-    public Color getFirstTextHighlightColor ()
-    {
+
+    public Color getFirstTextHighlightColor() {
         highlightColorsIterator = highlightColors.iterator();
         return highlightColorsIterator.next();
+    }
+
+    private void startUp() {
+        int directorySelect = 0;
+        saveOutputAsDialog = new JFileChooser();
+        saveOutputAsDialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        directorySelect = saveOutputAsDialog.showOpenDialog(SetupForm.this);
+
+        if (directorySelect == JFileChooser.CANCEL_OPTION || directorySelect == JFileChooser.ERROR_OPTION) {
+            this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        }
+
+        logObject = new PathsHashFile("log.txt", saveOutputAsDialog.getSelectedFile(), "$log$");
+        hashObject = new PathsHashFile("hash.hash", saveOutputAsDialog.getSelectedFile(), "$hash$");
+        hashReady = false;
+        makeLog = true;
+    }
+
+    private void setUpInventory() {
+        highlightColors = new ArrayList<>();
+        highlightColors.add(new Color(127, 61, 23, 150));
+        highlightColors.add(new Color(227, 73, 59, 150));
+        highlightColors.add(new Color(238, 186, 76, 150));
+        highlightColors.add(new Color(33, 182, 168, 150));
+        highlightColors.add(new Color(127, 23, 105, 150));
+        highlightColors.add(new Color(124, 130, 30, 150));
+        highlightColors.add(new Color(195, 17, 76, 150));
+        highlightColors.add(new Color(38, 17, 117, 100));
+        highlightColorsIterator = highlightColors.iterator();
+
+        keyParser = new KeyParser();
+        iconManager = new PathIconManager(iconsPath);
+        treeManager = new TreeManager(iconManager, labelToShowSatus);
+        cellTreeRenderer = new PathTreeCellRenderer(tree1, false);
+
+        logOutEnable.setSelected(true);
+        parsedKeys.setEditable(false);
+        outputTextArea.setEditable(false);
+        keyTexArea.setText("$");
+
+
+        treeToPick.setModel(new DefaultTreeModel(treeManager.makeTreeByName(hddRoots)));
+        treeToPick.setCellRenderer(new PathTreeCellRenderer(treeToPick, false));
+        treeToPick.setBackground(Color.WHITE);
+
+        tree1.setModel(new DefaultTreeModel(treeManager.makeTreeByName("")));
+        tree1.setCellRenderer(cellTreeRenderer);
+        tree1.setBackground(Color.WHITE);
+
+
+        pathComparator = new PathComparator();
+
+    }
+
+    private void initTreeOfRoots () {
+        treeToPick.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getSource() == treeToPick) {
+                    PathTreeNode nodeSelected = new PathTreeNode((PathTreeNode) treeToPick.getLastSelectedPathComponent());
+                    if (nodeSelected != null) {
+                        if (SwingUtilities.isLeftMouseButton(e) == true) {
+                            if (e.getClickCount() >= 2) {
+
+                            }
+                        } else if (SwingUtilities.isRightMouseButton(e) == true) {
+                            ((DefaultTreeModel) tree1.getModel()).insertNodeInto(nodeSelected, (PathTreeNode) tree1.getModel().getRoot(), 0);
+                            hashReady = false;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+                if (e.getSource() == treeToPick) {
+                    try {
+                        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    } catch (Exception ex) {
+                    }
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (e.getSource() == treeToPick) {
+                    try {
+                        setCursor(Cursor.getDefaultCursor());
+                    } catch (Exception ex) {
+                    }
+                }
+            }
+        });
+        treeToPick.addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
+            public void valueChanged(TreeSelectionEvent e) {
+                if (e.getSource() == treeToPick) {
+                    treeManager.createBranchAndInsertFromSelected(treeToPick);
+                }
+            }
+        });
+    }
+
+    private void initTreeOfWatch ()
+    {
+        tree1.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getSource() == tree1) {
+                    if (SwingUtilities.isRightMouseButton(e)) {
+                        treeManager.removeSelected(tree1);
+                    }
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (e.getSource() == tree1) {
+                    try {
+                        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    } catch (Exception ex) {
+                    }
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (e.getSource() == tree1) {
+                    try {
+                        setCursor(Cursor.getDefaultCursor());
+                    } catch (Exception ex) {
+                    }
+                }
+            }
+        });
+        tree1.addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
+            public void valueChanged(TreeSelectionEvent e) {
+                if (e.getSource() == tree1) {
+                    treeManager.createBranchAndInsertFromSelected(tree1);
+                }
+            }
+        });
+    }
+
+    private void initButtons ()
+    {
+        stepButton.addActionListener(new ActionListener() {
+            /**Watch there**/
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pathComparator.resetAll();
+                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+                if (hashReady == false) {
+                    treeManager.makeHash(tree1, hashObject);
+                    hashReady = true;
+                }
+                treeManager.watchHash(pathComparator, makeLog, logObject, hashObject);
+
+                setCursor(Cursor.getDefaultCursor());
+                printWithHighlight(pathComparator.getTextItems(), outputTextArea);
+                hashObject.setNeedUpdate(false);
+            }
+        });
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pathComparator.resetAll();
+                outputTextArea.setText("0");
+                keyTexArea.setText("'any'");
+                tree1.setModel(new DefaultTreeModel(new PathTreeNode("Added")));
+                treeToPick.setModel(new DefaultTreeModel(treeManager.makeTreeByName(hddRoots)));
+            }
+        });
+        expandButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == expandButton) {
+                    treeManager.expandRows(tree1);
+                }
+            }
+        });
+        expandAllButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == expandAllButton) {
+                    treeManager.expandAll(tree1);
+                    tree1.setFocusable(true);
+                    tree1.setFocusCycleRoot(true);
+                }
+            }
+        });
+        buttonCollapseAll.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == buttonCollapseAll) {
+                    treeManager.collapseAll(tree1);
+                }
+            }
+        });
+    }
+
+    private void initOthers ()
+    {
+        keyTexArea.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                super.keyTyped(e);
+                if (e.getSource() == keyTexArea) {
+                    outputTextArea.setText("");
+                    parsedKeys.setText("");
+                    for (String s : keyParser.parseToDefault(pathComparator, keyTexArea.getText())) {
+                        parsedKeys.append(s + "\n");
+                    }
+                }
+            }
+        });
+        keyTexArea.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                if (e.getSource() == keyTexArea) {
+                    keyTexArea.selectAll();
+                    setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                if (e.getSource() == keyTexArea) {
+                    setCursor(Cursor.getDefaultCursor());
+                }
+            }
+        });
+        watchMode.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == watchMode) {
+                    cellTreeRenderer.setLogic(watchMode.isSelected());
+                }
+            }
+        });
+        expandMode.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == expandMode) {
+                    cellTreeRenderer.setExpandlogic(expandMode.isSelected());
+                }
+            }
+        });
+        searchField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                super.keyTyped(e);
+                if (e.getSource() == searchField) {
+                    searchProcess(outputTextArea, searchField);
+                    //searchProcess(parsedKeys, searchField);
+                }
+            }
+        });
+        searchField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                if (e.getSource() == searchField) {
+                    searchField.selectAll();
+                    setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                super.mouseEntered(e);
+                if (e.getSource() == searchField) {
+                    setCursor(Cursor.getDefaultCursor());
+                }
+            }
+        });
+        logOutEnable.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == logOutEnable) {
+                    makeLog = logOutEnable.isSelected();
+                }
+            }
+        });
     }
 
 }

@@ -159,6 +159,15 @@ public class PathComparator {
         return time.toString();
     }
 
+    public String printKeys ()
+    {
+        String output = "Keys -> ";
+        for (pathCompareKey key : keys) {
+            output += "[" + key.getKey().getName() + "]-";
+        }
+        return output;
+    }
+
     public int getKeyCount ()
     {
         return keys.size();

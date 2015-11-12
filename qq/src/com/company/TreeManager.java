@@ -36,19 +36,21 @@ import java.util.stream.Stream;
 public class TreeManager {
 
     private PathIconManager iconManager;
-    private JProgressBar guiBar;
-    private int allignName;
-    private int allignSize;
-    private int allignDate;
+    private int alignName;
+    private int alignSize;
+    private int alignDate;
     DateFormat dateFormat;
 
-    public TreeManager(PathIconManager iconManager)
+    private JLabel statusOut;
+
+    public TreeManager(PathIconManager iconManager, JLabel statusOut)
     {
         this.iconManager = iconManager;
+        this.statusOut = statusOut;
         dateFormat = new SimpleDateFormat("YYYY:MM:dd : HH:mm:ss");
-        this.allignName = 40;
-        this.allignSize = 16;
-        this.allignDate = 20;
+        this.alignName = 80;
+        this.alignSize = 16;
+        this.alignDate = 20;
     }
 
     private PathTreeNode insertBranchByPath (PathTreeNode rootNode, Path path)
@@ -205,8 +207,9 @@ public class TreeManager {
     {
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         PathTreeNode root = (PathTreeNode) model.getRoot();
-
+        statusOut.setText("gathering...");
         this.makeHash(tree, root, hashFile);
+        statusOut.setText("done!");
 
         hashFile.writeToLog();hashFile.clear();hashFile.setNewBook("$hash$");
     }
@@ -215,17 +218,19 @@ public class TreeManager {
     {
         Word word = new Word();
         comparator.resetAll();
+        statusOut.setText("watching...");
         comparator.setTimeStart(System.nanoTime());
         Stream<String> stream = hashFile.readLineByLine();
 
         if (makeLog == false) {
             stream.forEach(line -> this.look(word, line, comparator, hashFile));
         } else {
-            stream.forEach(line -> this.lookAndWriteLog(word, line, comparator, logFile, hashFile));
+            logFile.writeToCurrentParagraph(comparator.printKeys());
+            stream.forEach(line -> this.lookAndWriteLog(word, line, comparator, logFile, hashFile, "^~-~"));
             logFile.writeToLog();logFile.clear();logFile.setNewBook("$log$");
         }
         stream.close();
-
+        statusOut.setText("done!");
         comparator.setTimeEnd(System.nanoTime());
     }
 
@@ -239,7 +244,7 @@ public class TreeManager {
         }
     }
 
-    private void lookAndWriteLog (Word word, String line, PathComparator comparator, PathsHashFile logFile, PathsHashFile hashFile)
+    private void lookAndWriteLog (Word word, String line, PathComparator comparator, PathsHashFile logFile, PathsHashFile hashFile, String trailer)
     {
         word.setValue(line);
         ArrayList<String> attributes;
@@ -255,24 +260,18 @@ public class TreeManager {
             name = attributes.get(1);
             size = attributes.get(2);
             date = attributes.get(3);
-            nameSize = 50 - name.length();
-            sizeSize = 16 - size.length();
-            dateSize = 20 - date.length();
-
             postfix = comparator.compareAndLog(name, Long.parseLong(size));
+            size = this.convertStringNumber(size);
+
+            nameSize = this.alignName - name.length();
+            sizeSize = this.alignSize - size.length();
+            dateSize = this.alignDate - date.length();
 
             name += ';';
-            while (--nameSize >= 0) {
-                name += ' ';
-            }
-            size = convertStringNumber(size);
-            while (--sizeSize >= 0) {
-                size += ' ';
-            }
+            name = this.insertTrail(name, trailer, nameSize);
+            size = this.insertTrail(size, trailer, sizeSize);
             date += "; ";
-            while (--dateSize >= 0) {
-                date += ' ';
-            }
+            date = this.insertTrail(date, trailer, dateSize);
 
             if (postfix.isEmpty() == false) {
                 logFile.writeToCurrentParagraph(name + "size- " + size + "date- " + date + " matched to- <" + postfix + ">");
@@ -315,11 +314,6 @@ public class TreeManager {
         } while (oldRowCount != rowCount);
     }
 
-    public void setGuiBarToShow (JProgressBar bar)
-    {
-        this.guiBar = bar;
-    }
-
     private String printFileToLog (File file, DateFormat format)
     {
         return  file.getName() +
@@ -346,18 +340,17 @@ public class TreeManager {
                 format.format(new Date(file.lastModified())) + ">";
     }
 
-    public void setAlligns (int allignName, int allignSize, int allignDate)
+    public void setAligns (int allignName, int allignSize, int allignDate)
     {
-        this.allignName = allignName;
-        this.allignSize = allignSize;
-        this.allignDate = allignDate;
+        this.alignName = allignName;
+        this.alignSize = allignSize;
+        this.alignDate = allignDate;
     }
 
     private String convertStringNumber (String number)
     {
         char prefix = ' ';
-        String stringInteger = "";
-        String stringMantissa = "";
+        String output = "";
         int length = number.length();
         if (length > 15) {
             prefix = '?';
@@ -372,13 +365,32 @@ public class TreeManager {
         } else if (length > 0) {
             prefix = ' ';
         }
-        for (int i = 0; i < length; i++) {
+        char[] array = number.toCharArray();
+        for (int i = 0, stop = 0; i < length; i++) {
+            if (i == 3) {
+                output += ".";
+            }
             if (i < 3) {
-                stringInteger += number.charAt(i);
+                output += array[i];
             } else {
-                stringMantissa += number.charAt(i);
+                output += array[i];
+            }
+            if (++stop > 5) {
+                break;
             }
         }
-        return stringInteger + "." + stringMantissa + " " + prefix + "bytes";
+        return output + " " + prefix + "bytes";
     }
+
+    private String insertTrail (String input, String trailer, int length)
+    {
+        int trailerLength = trailer.length();
+        while (length >= 0) {
+            for (int index = 0; length >= 0 && index < trailerLength; length--, index++) {
+                input += trailer.charAt(index);
+            }
+        }
+        return input;
+    }
+
 }
