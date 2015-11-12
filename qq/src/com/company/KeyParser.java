@@ -1,5 +1,6 @@
 package com.company;
 
+import java.awt.*;
 import java.util.ArrayList;
 
 /**
@@ -14,10 +15,10 @@ public class KeyParser {
     }
 
 
-    public ArrayList<String> parseToDefault (PathComparator comparator, String in, String... args)
+    public ArrayList<textBoundedItem> parseToDefault (PathComparator comparator, String in, String... args)
     {
         String garbage = "[garbage]";
-        ArrayList<String> output = new ArrayList<>();
+        ArrayList<textBoundedItem> output = new ArrayList<>();
 
         ArrayList<Word> templates = this.getArrayOfWords(in, '{', '}');
         if (templates.isEmpty() == false) {
@@ -30,8 +31,6 @@ public class KeyParser {
             garbage = keys.remove(0).getValue();
         }
 
-
-
         for (Word w :templates) {
             w.removeSpacesFromWord();
         }
@@ -42,6 +41,10 @@ public class KeyParser {
         for (Word key : keys) {
             key.insertWordValueToNameBetween(templates, '[', ']');
             key.removeSpacesFromWord();
+            if (key.getName().isEmpty() == true) {
+                keysToRemove.add(key);
+                continue;
+            }
             String name = key.getName();
             if (name.contains("-") == true) {
                 keysToRemove.add(key);
@@ -54,7 +57,7 @@ public class KeyParser {
                     int endIndex = (int)end;
                     if (startIndex <= endIndex) {
                         for (int i = startIndex; i <= endIndex; i++) {
-                            keysToinsert.add(new Word(Character.toString((char)i) + insert, Integer.toString(i)));
+                            keysToinsert.add(new Word(Character.toString((char)i) + insert, insert));
                         }
                     }
                 }
@@ -75,23 +78,22 @@ public class KeyParser {
         keys.removeAll(keysToRemove);
         keys.addAll(keysToinsert);
 
-
         comparator.setUp(keys);
 
-        output.add("Collected keys : ");
+        output.add(new textBoundedItem("Collected keys : ", new Color(0, 10, 150, 100)));
         for (Word w : keys) {
-            output.add(w.toString());
+            output.add(new textBoundedItem(w.toString(), new Color(0, 10, 150, 50)));
         }
 
-        output.add("\nTemplates : ");
+        output.add(new textBoundedItem("\nTemplates : ", new Color(130, 20, 20, 100)));
         for (Word w :templates) {
-            output.add(w.toString());
+            output.add(new textBoundedItem(w.toString(), new Color(130, 20, 20, 50)));
         }
 
-        output.add("\nUnrecognized : ");
-        output.add(garbage);
-        output.add("\nSystem : ");
-        output.add(comparator.getSystemInfo());
+        output.add(new textBoundedItem("\nUnrecognized : ", new Color(20, 20, 20, 100)));
+        output.add(new textBoundedItem(garbage, new Color(20, 20, 20, 100)));
+        output.add(new textBoundedItem("\nSystem : ", Color.orange));
+        output.add(new textBoundedItem(comparator.getSystemInfo(), Color.orange));
         return output;
     }
 

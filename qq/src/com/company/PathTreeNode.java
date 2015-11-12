@@ -52,7 +52,11 @@ public class PathTreeNode extends DefaultMutableTreeNode {
     @Override
     public String toString ()
     {
-        String path = getUserObject().toString();
+        Object object = getUserObject();
+        if (object == null) {
+            return "null";
+        }
+        String path = object.toString();
         File file = new File(path);
         if (file.exists() == true) {
             if (file.isDirectory() == false) {

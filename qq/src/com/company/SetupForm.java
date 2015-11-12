@@ -433,9 +433,8 @@ public class SetupForm extends JFrame {
                 if (e.getSource() == keyTexArea) {
                     outputTextArea.setText("");
                     parsedKeys.setText("");
-                    for (String s : keyParser.parseToDefault(pathComparator, keyTexArea.getText())) {
-                        parsedKeys.append(s + "\n");
-                    }
+
+                    printWithHighlight(keyParser.parseToDefault(pathComparator, keyTexArea.getText()), parsedKeys);
                 }
             }
         });

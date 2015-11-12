@@ -179,11 +179,8 @@ public class TreeManager {
 
     private void makeHash (JTree tree, PathTreeNode fromNode, PathsHashFile hashFile)
     {
-        int items = 0;
-        if (fromNode == null) {
-            return;
-        }
-        Object o = null;
+        int items;
+        Object o;
         if (fromNode.isLeaf() == true) {
             o = fromNode.getUserObject();
             if (o == null) {

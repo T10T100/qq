@@ -83,12 +83,14 @@ public class PathComparator {
     public String compareAndLog (String name, long size)
     {
         String log = "";
+        int matched = 0;
         this.watched++;
         this.totalSize += size;
         boolean all = true;
         for (pathCompareKey key : keys) {
             if (key.compare(name, size) == true) {
                 log += " [" + key.getKey().getName() + "] ";
+                matched++;
             } else {
                 all = false;
             }
@@ -96,13 +98,12 @@ public class PathComparator {
         if (all == true) {
             return "[ALL]";
         }
-        return log;
+        return "(" + Integer.toString(matched) + ")" + log;
     }
 
     public String getSystemInfo ()
     {
-        FileSystem system = FileSystems.getDefault();
-        return system.toString();
+        return "???";
     }
 
     public ArrayList<textBoundedItem> getTextItems ()
@@ -161,7 +162,7 @@ public class PathComparator {
 
     public String printKeys ()
     {
-        String output = "Keys -> ";
+        String output = "Keys (" + Integer.toString(keys.size()) + ") -> ";
         for (pathCompareKey key : keys) {
             output += "[" + key.getKey().getName() + "]-";
         }
