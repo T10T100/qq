@@ -37,12 +37,18 @@ public class TreeManager {
 
     private PathIconManager iconManager;
     private JProgressBar guiBar;
+    private int allignName;
+    private int allignSize;
+    private int allignDate;
     DateFormat dateFormat;
 
     public TreeManager(PathIconManager iconManager)
     {
         this.iconManager = iconManager;
         dateFormat = new SimpleDateFormat("YYYY:MM:dd : HH:mm:ss");
+        this.allignName = 40;
+        this.allignSize = 16;
+        this.allignDate = 20;
     }
 
     private PathTreeNode insertBranchByPath (PathTreeNode rootNode, Path path)
@@ -71,7 +77,7 @@ public class TreeManager {
         return rootNode;
     }
 
-    public void remove (JTree tree, PathTreeNode node)
+    private void remove (JTree tree, PathTreeNode node)
     {
         DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
         if (model.getRoot() == node) {
@@ -169,7 +175,6 @@ public class TreeManager {
         return insertBranchByRoot(tree, (PathTreeNode) tree.getLastSelectedPathComponent());
     }
 
-
     private void makeHash (JTree tree, PathTreeNode fromNode, PathsHashFile hashFile)
     {
         int items = 0;
@@ -233,6 +238,7 @@ public class TreeManager {
             comparator.compareAndCollect(attributes.get(1), Long.parseLong(attributes.get(2)));
         }
     }
+
     private void lookAndWriteLog (Word word, String line, PathComparator comparator, PathsHashFile logFile, PathsHashFile hashFile)
     {
         word.setValue(line);
@@ -259,7 +265,7 @@ public class TreeManager {
             while (--nameSize >= 0) {
                 name += ' ';
             }
-            size += " bytes; ";
+            size = convertStringNumber(size);
             while (--sizeSize >= 0) {
                 size += ' ';
             }
@@ -283,6 +289,7 @@ public class TreeManager {
         }
         return rowCount;
     }
+
     public long expandAll (JTree tree)
     {
         long oldCount = 0, count = 0;
@@ -339,4 +346,39 @@ public class TreeManager {
                 format.format(new Date(file.lastModified())) + ">";
     }
 
+    public void setAlligns (int allignName, int allignSize, int allignDate)
+    {
+        this.allignName = allignName;
+        this.allignSize = allignSize;
+        this.allignDate = allignDate;
+    }
+
+    private String convertStringNumber (String number)
+    {
+        char prefix = ' ';
+        String stringInteger = "";
+        String stringMantissa = "";
+        int length = number.length();
+        if (length > 15) {
+            prefix = '?';
+        } else if (length > 12) {
+            prefix = 'T';
+        } else if (length > 9) {
+            prefix = 'G';
+        } else if (length > 6) {
+            prefix = 'M';
+        } else if (length > 3) {
+            prefix = 'K';
+        } else if (length > 0) {
+            prefix = ' ';
+        }
+        for (int i = 0; i < length; i++) {
+            if (i < 3) {
+                stringInteger += number.charAt(i);
+            } else {
+                stringMantissa += number.charAt(i);
+            }
+        }
+        return stringInteger + "." + stringMantissa + " " + prefix + "bytes";
+    }
 }

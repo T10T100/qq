@@ -85,10 +85,16 @@ public class PathComparator {
         String log = "";
         this.watched++;
         this.totalSize += size;
+        boolean all = true;
         for (pathCompareKey key : keys) {
             if (key.compare(name, size) == true) {
                 log += " [" + key.getKey().getName() + "] ";
+            } else {
+                all = false;
             }
+        }
+        if (all == true) {
+            return "[ALL]";
         }
         return log;
     }

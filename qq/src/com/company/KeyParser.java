@@ -19,15 +19,11 @@ public class KeyParser {
         String garbage = "[garbage]";
         ArrayList<String> output = new ArrayList<>();
 
-        ArrayList<Word> templates = this.getArrayOfWords(in, '<', '>');
+        ArrayList<Word> templates = this.getArrayOfWords(in, '{', '}');
         if (templates.isEmpty() == false) {
             garbage = templates.remove(0).getValue();
         }
 
-        ArrayList<Word> patterns = this.getArrayOfWords(garbage, '{', '}');
-        if (patterns.isEmpty() == false) {
-            garbage = patterns.remove(0).getValue();
-        }
 
         ArrayList<Word> keys = this.getArrayOfWords(garbage, ',');
         if (keys.isEmpty() == false) {
@@ -36,44 +32,47 @@ public class KeyParser {
 
 
 
-
         for (Word w :templates) {
             w.removeSpacesFromWord();
         }
+
+        ArrayList<Word> keysToRemove = new ArrayList<>();
+        ArrayList<Word> keysToinsert = new ArrayList<>();
         for (Word key : keys) {
             key.insertWordValueToNameBetween(templates, '[', ']');
             key.removeSpacesFromWord();
-        }
-
-        ArrayList<String> arg;
-        for (Word w : patterns) {
-            arg = w.getArrayFromValue('\'', '\'');
-            w.setValue(arg.remove(0));
-            w.setArgs(arg);
-            w.removeSpacesFromWord();
-            if (w.name.contentEquals("key")) {
-                for (String key : w.getArgs()) {
-                    int indexOf = key.indexOf("-");
-                    if (indexOf >= 1 && key.length() >= 3) {
-                        char start = key.charAt(indexOf - 1);
-                        char end = key.charAt(indexOf + 1);
-                        int startIndex = (int)start;
-                        int endIndex = (int)end;
-                        if (startIndex <= endIndex) {
-                            for (int i = startIndex; i <= endIndex; i++) {
-                                keys.add(new Word(Character.toString((char)i), Integer.toString(i)));
-                            }
-                        } else {
-                            for (int i = endIndex; i <= startIndex; i++) {
-                                keys.add(new Word(Character.toString((char)i), Integer.toString(i)));
-                            }
+            String name = key.getName();
+            if (name.contains("-") == true) {
+                keysToRemove.add(key);
+                int indexOf = name.indexOf("-");
+                if (indexOf >= 1 && name.length() >= 3) {
+                    char start = name.charAt(indexOf - 1);
+                    char end = name.charAt(indexOf + 1);
+                    int startIndex = (int)start;
+                    int endIndex = (int)end;
+                    if (startIndex <= endIndex) {
+                        for (int i = startIndex; i <= endIndex; i++) {
+                            keysToinsert.add(new Word(Character.toString((char)i), Integer.toString(i)));
                         }
                     }
                 }
-            } else {
-
+            } else if (name.contains("<")) {
+                keysToRemove.add(key);
+                Word word = new Word(name, '<');
+                if (word.getName().isEmpty() == true || word.getValue().isEmpty() == true) {
+                    continue;
+                }
+                word.removeAllButDigitsFromWord();
+                int bottomValue = Integer.parseInt(word.getName());
+                int topValue = Integer.parseInt(word.getValue());
+                for (int i = bottomValue; i <= topValue; i++) {
+                    keysToinsert.add(new Word(Integer.toString(i), "numeric"));
+                }
             }
         }
+        keys.removeAll(keysToRemove);
+        keys.addAll(keysToinsert);
+
 
         comparator.setUp(keys);
 
@@ -81,27 +80,16 @@ public class KeyParser {
         for (Word w : keys) {
             output.add(w.toString());
         }
+
         output.add("\nTemplates : ");
         for (Word w :templates) {
             output.add(w.toString());
         }
-        output.add("\nPatterns : ");
-        for (Word w :patterns) {
-            output.add(w.toString());
-        }
+
         output.add("\nGarbage : ");
         output.add(garbage);
         output.add("\nSystem : ");
         output.add(comparator.getSystemInfo());
-        output.add("\nRegular : \n");
-        /*
-        if (setted == true) {
-            Pattern p = Pattern.compile(pattern.value);
-            Matcher matcher = p.matcher("0123456789abcd");
-            output.add("0123456789abcd\n");
-            output.add(matcher.toMatchResult().toString());
-        }
-        */
         return output;
     }
 
