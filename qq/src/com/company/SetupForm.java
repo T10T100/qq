@@ -40,7 +40,6 @@ public class SetupForm extends JFrame {
     private JButton buttonCollapseAll;
     private JTextArea parsedKeys;
     private JTextField searchField;
-    private JCheckBox watchOnCapitalsCheckBox;
     private JCheckBox logOutEnable;
 
     private JFileChooser saveOutputAsDialog;
@@ -131,11 +130,11 @@ public class SetupForm extends JFrame {
 
         PathTreeCellRenderer cellTreeRenderer = new PathTreeCellRenderer(tree1, false);
 
-        treeToPick.setModel(new DefaultTreeModel(treeManager.createTreeFromString(hddRoots)));
+        treeToPick.setModel(new DefaultTreeModel(treeManager.makeTreeByName(hddRoots)));
         treeToPick.setCellRenderer(new PathTreeCellRenderer(treeToPick, false));
         treeToPick.setBackground(Color.WHITE);
 
-        tree1.setModel(new DefaultTreeModel(treeManager.createTreeFromString("")));
+        tree1.setModel(new DefaultTreeModel(treeManager.makeTreeByName("")));
         tree1.setCellRenderer(cellTreeRenderer);
         tree1.setBackground(Color.WHITE);
 
@@ -264,12 +263,12 @@ public class SetupForm extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 pathComparator.resetAll();
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                if (logOutEnable.isSelected() == true) {
-                    treeManager.watchAllLeafsInTree(tree1, pathComparator, hashReady, logObject, hashObject);
-                } else {
-                    treeManager.watchAllLeafsInTree(tree1, pathComparator, hashReady, hashObject);
+
+                if (hashReady == false) {
+                    treeManager.makeHash(tree1, hashObject);
+                    hashReady = true;
                 }
-                hashReady = true;
+                treeManager.watchHash(pathComparator, hashObject);
 
                 setCursor(Cursor.getDefaultCursor());
                 printWithHighlight(pathComparator.getTextItems(), outputTextArea);
@@ -335,7 +334,7 @@ public class SetupForm extends JFrame {
                 outputTextArea.setText("0");
                 keyTexArea.setText("'any'");
                 tree1.setModel(new DefaultTreeModel(new PathTreeNode("Added")));
-                treeToPick.setModel(new DefaultTreeModel(treeManager.createTreeFromString(hddRoots)));
+                treeToPick.setModel(new DefaultTreeModel(treeManager.makeTreeByName(hddRoots)));
             }
         });
 

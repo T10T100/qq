@@ -3,11 +3,13 @@ package com.company;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Created by k on 11.11.2015.
@@ -182,16 +184,16 @@ public class PathsHashFile {
         }
     }
 
-    public List<String> readLineByLine ()
+    public Stream<String> readLineByLine ()
     {
-        List<String> output = new ArrayList<>();
+        Stream<String> output = null;
         if (this.logFile == null) {
             return output;
         }
         try {
-            output = Files.readAllLines(this.logFile.toPath());
+            output = Files.lines(this.logFile.toPath(), Charset.forName("ISO-8859-1"));
         } catch (IOException exception) {
-
+            System.out.println(exception.fillInStackTrace());
         }
         return output;
     }
