@@ -285,7 +285,6 @@ public class Word {
         return array;
     }
 
-
     private ArrayList<String> getArray (char[] parsing, char delimiter)
     {
         ArrayList<String> outputCollection = new ArrayList<>();
@@ -347,7 +346,6 @@ public class Word {
         }
         return array;
     }
-
 
     private String insertWordValueBetween (char[] parsing, ArrayList<Word> words, char begin, char end)
     {
@@ -424,6 +422,7 @@ public class Word {
     {
         return this.getIntegersFrom(this.name.toCharArray());
     }
+
     public ArrayList<BoundedNumber> getIntegersFromValue ()
     {
         return this.getIntegersFrom(this.value.toCharArray());

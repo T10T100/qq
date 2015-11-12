@@ -17,7 +17,7 @@
           </grid>
         </constraints>
         <properties>
-          <text value="&quot;any&quot;"/>
+          <text value=""/>
         </properties>
       </component>
       <component id="313f7" class="javax.swing.JLabel" binding="labelToCompare">
@@ -59,7 +59,7 @@
           <component id="fdeaf" class="javax.swing.JTextArea" binding="outputTextArea">
             <constraints/>
             <properties>
-              <text value="nothing to show"/>
+              <text value=""/>
             </properties>
           </component>
         </children>
@@ -135,7 +135,7 @@
           <component id="9a908" class="javax.swing.JTextArea" binding="parsedKeys">
             <constraints/>
             <properties>
-              <text value="Parsed output there"/>
+              <text value=""/>
             </properties>
           </component>
         </children>

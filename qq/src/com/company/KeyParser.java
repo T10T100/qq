@@ -38,6 +38,7 @@ public class KeyParser {
 
         ArrayList<Word> keysToRemove = new ArrayList<>();
         ArrayList<Word> keysToinsert = new ArrayList<>();
+        String insert = "";
         for (Word key : keys) {
             key.insertWordValueToNameBetween(templates, '[', ']');
             key.removeSpacesFromWord();
@@ -46,13 +47,14 @@ public class KeyParser {
                 keysToRemove.add(key);
                 int indexOf = name.indexOf("-");
                 if (indexOf >= 1 && name.length() >= 3) {
+                    insert = name.substring(3, name.length());
                     char start = name.charAt(indexOf - 1);
                     char end = name.charAt(indexOf + 1);
                     int startIndex = (int)start;
                     int endIndex = (int)end;
                     if (startIndex <= endIndex) {
                         for (int i = startIndex; i <= endIndex; i++) {
-                            keysToinsert.add(new Word(Character.toString((char)i), Integer.toString(i)));
+                            keysToinsert.add(new Word(Character.toString((char)i) + insert, Integer.toString(i)));
                         }
                     }
                 }
@@ -76,7 +78,7 @@ public class KeyParser {
 
         comparator.setUp(keys);
 
-        output.add("Keys : ");
+        output.add("Collected keys : ");
         for (Word w : keys) {
             output.add(w.toString());
         }
@@ -86,7 +88,7 @@ public class KeyParser {
             output.add(w.toString());
         }
 
-        output.add("\nGarbage : ");
+        output.add("\nUnrecognized : ");
         output.add(garbage);
         output.add("\nSystem : ");
         output.add(comparator.getSystemInfo());
