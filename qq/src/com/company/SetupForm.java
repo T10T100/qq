@@ -16,6 +16,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Created by Operator on 26.10.2015.
@@ -55,6 +56,7 @@ public class SetupForm extends JFrame {
     PathsHashFile logObject;
     PathsHashFile hashObject;
     private boolean hashReady;
+    private boolean makeLog;
 
     private String[] hddRoots = {
             "A:/",
@@ -115,9 +117,10 @@ public class SetupForm extends JFrame {
             this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
         }
 
-        logObject = new PathsHashFile("log.txt", saveOutputAsDialog.getSelectedFile(), "$LOG$");
-        hashObject = new PathsHashFile("hash.txt", saveOutputAsDialog.getSelectedFile(), "$HASH$");
+        logObject = new PathsHashFile("log.txt", saveOutputAsDialog.getSelectedFile(), "$log$");
+        hashObject = new PathsHashFile("hash.hash", saveOutputAsDialog.getSelectedFile(), "$hash$");
         hashReady = false;
+        makeLog = false;
 
         parsedKeys.setEditable(false);
         outputTextArea.setEditable(false);
@@ -268,7 +271,7 @@ public class SetupForm extends JFrame {
                     treeManager.makeHash(tree1, hashObject);
                     hashReady = true;
                 }
-                treeManager.watchHash(pathComparator, hashObject);
+                treeManager.watchHash(pathComparator, makeLog, logObject, hashObject);
 
                 setCursor(Cursor.getDefaultCursor());
                 printWithHighlight(pathComparator.getTextItems(), outputTextArea);
@@ -398,6 +401,15 @@ public class SetupForm extends JFrame {
             }
         });
 
+        logOutEnable.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == logOutEnable) {
+                    makeLog = logOutEnable.isSelected();
+                }
+            }
+        });
+
         setVisible(true);
     }
 
@@ -504,4 +516,5 @@ public class SetupForm extends JFrame {
         highlightColorsIterator = highlightColors.iterator();
         return highlightColorsIterator.next();
     }
+
 }

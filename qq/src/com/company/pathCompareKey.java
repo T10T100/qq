@@ -59,13 +59,9 @@ public class pathCompareKey {
         return false;
     }
 
-    public boolean compare (String arg, long size, boolean logic)
+    public boolean compare (String arg, long size)
     {
-        if (logic == true) {
-            return this.compareToName(arg, size);
-        } else {
-            return this.compareToValue(arg, size);
-        }
+        return this.compareToName(arg, size);
     }
 
     private String printSize (long size)

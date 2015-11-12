@@ -206,14 +206,19 @@ public class TreeManager {
         hashFile.writeToLog();hashFile.clear();hashFile.setNewBook("$hash$");
     }
 
-    public void watchHash (PathComparator comparator, PathsHashFile hashFile)
+    public void watchHash (PathComparator comparator, boolean makeLog, PathsHashFile logFile, PathsHashFile hashFile)
     {
         Word word = new Word();
         comparator.resetAll();
         comparator.setTimeStart(System.nanoTime());
         Stream<String> stream = hashFile.readLineByLine();
 
-        stream.forEach(line -> this.look(word, line, comparator, hashFile));
+        if (makeLog == false) {
+            stream.forEach(line -> this.look(word, line, comparator, hashFile));
+        } else {
+            stream.forEach(line -> this.lookAndWriteLog(word, line, comparator, logFile, hashFile));
+            logFile.writeToLog();logFile.clear();logFile.setNewBook("$log$");
+        }
         stream.close();
 
         comparator.setTimeEnd(System.nanoTime());
@@ -225,7 +230,47 @@ public class TreeManager {
         ArrayList<String> attributes;
         attributes = word.getArrayFromValue('<', '>');
         if (attributes.size() >= 2) {
-            comparator.compareAndCollect(attributes.get(1), Long.parseLong(attributes.get(2)), true);
+            comparator.compareAndCollect(attributes.get(1), Long.parseLong(attributes.get(2)));
+        }
+    }
+    private void lookAndWriteLog (Word word, String line, PathComparator comparator, PathsHashFile logFile, PathsHashFile hashFile)
+    {
+        word.setValue(line);
+        ArrayList<String> attributes;
+        String postfix = "";
+        String name;
+        String size;
+        String date;
+        int nameSize;
+        int sizeSize;
+        int dateSize;
+        attributes = word.getArrayFromValue('<', '>');
+        if (attributes.size() >= 2) {
+            name = attributes.get(1);
+            size = attributes.get(2);
+            date = attributes.get(3);
+            nameSize = 50 - name.length();
+            sizeSize = 16 - size.length();
+            dateSize = 20 - date.length();
+
+            postfix = comparator.compareAndLog(name, Long.parseLong(size));
+
+            name += ';';
+            while (--nameSize >= 0) {
+                name += ' ';
+            }
+            size += " bytes; ";
+            while (--sizeSize >= 0) {
+                size += ' ';
+            }
+            date += "; ";
+            while (--dateSize >= 0) {
+                date += ' ';
+            }
+
+            if (postfix.isEmpty() == false) {
+                logFile.writeToCurrentParagraph(name + "size- " + size + "date- " + date + " matched to- <" + postfix + ">");
+            }
         }
     }
 

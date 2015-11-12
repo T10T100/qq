@@ -25,14 +25,12 @@ public class PathComparator {
     private long timeEnd;
     private long totalSize;
     private long watched;
-    private boolean skipCompare;
     ArrayList<pathCompareKey> keys = new ArrayList<>();
 
     public PathComparator ()
     {
         this.totalSize = 0;
         this.watched = 0;
-        this.skipCompare = false;
     }
 
     public void setUp (ArrayList<Word> words)
@@ -62,30 +60,37 @@ public class PathComparator {
         this.totalSize = 0;
     }
 
-    public boolean compareAndCollect (File file, boolean logic)
+    public boolean compareAndCollect (File file)
     {
-        if (this.skipCompare == true) {
-            return false;
-        }
         this.watched++;
         this.totalSize += file.length();
         for (pathCompareKey key : keys) {
-            key.compare(file.getName(), file.length(), logic);
+            key.compare(file.getName(), file.length());
         }
         return true;
     }
 
-    public boolean compareAndCollect (String name, long size, boolean logic)
+    public boolean compareAndCollect (String name, long size)
     {
-        if (this.skipCompare == true) {
-            return false;
-        }
         this.watched++;
         this.totalSize += size;
         for (pathCompareKey key : keys) {
-            key.compare(name, size, logic);
+            key.compare(name, size);
         }
         return true;
+    }
+
+    public String compareAndLog (String name, long size)
+    {
+        String log = "";
+        this.watched++;
+        this.totalSize += size;
+        for (pathCompareKey key : keys) {
+            if (key.compare(name, size) == true) {
+                log += " [" + key.getKey().getName() + "] ";
+            }
+        }
+        return log;
     }
 
     public String getSystemInfo ()
@@ -153,8 +158,4 @@ public class PathComparator {
         return keys.size();
     }
 
-    public void setSkipCompare (boolean skip)
-    {
-        this.skipCompare = skip;
-    }
 }
