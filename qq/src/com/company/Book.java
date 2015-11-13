@@ -14,16 +14,18 @@ import java.util.stream.Stream;
 /**
  * Created by k on 11.11.2015.
  */
-public class PathsHashFile {
+public class Book {
     private final String name;
     private final String location;
     private final File logFile;
     private boolean needUpdate;
     private boolean exist;
+    private String charsetName;
+    private Vector eventListeners;
 
     private Map<String, ArrayList<String>> book;
     private ArrayList<String> paragraph;
-    public PathsHashFile (String name, String location, String bookName)
+    public Book(String name, String location, String bookName)
     {
         this.book = new HashMap<>();
         this.book.put(bookName, new ArrayList<>());
@@ -46,29 +48,30 @@ public class PathsHashFile {
             return;
         }
         logFile = new File(location + File.separator + name);
-            try {
-                if (Files.deleteIfExists(logFile.toPath()) == true) {
+        try {
+            if (Files.deleteIfExists(logFile.toPath()) == true) {
 
-                } else {
-
-                }
-
-            } catch (IOException exception) {
+            } else {
 
             }
-            logFile.getParentFile().mkdirs();
-            try {
-                if (logFile.createNewFile() == true) {
-                    this.exist = true;
-                } else {
 
-                }
-            } catch (IOException exception) {
+        } catch (IOException exception) {
+
+        }
+        logFile.getParentFile().mkdirs();
+        try {
+            if (logFile.createNewFile() == true) {
+                this.exist = true;
+            } else {
 
             }
+        } catch (IOException exception) {
+
+        }
+        this.charsetName = "UTF-16";
     }
 
-    public PathsHashFile (String name, File location, String bookName)
+    public Book(String name, File location, String bookName)
     {
         this.book = new HashMap<>();
         this.book.put(bookName, new ArrayList<>());
@@ -100,6 +103,43 @@ public class PathsHashFile {
             }
         } catch (IOException exception) {
 
+        }
+        this.charsetName = "UTF-16";
+    }
+
+    public void addEventListener (BookEventListener listener)
+    {
+        if (eventListeners == null) {
+            eventListeners = new Vector();
+        }
+        if (eventListeners.contains(listener) == false) {
+            eventListeners.add(listener);
+        }
+    }
+    public void removeEventListener (BookEventListener listener)
+    {
+        eventListeners.remove(listener);
+    }
+
+    public void removeAllListeners ()
+    {
+        eventListeners.removeAll(eventListeners);
+    }
+
+    private void fireEvents (String cause)
+    {
+        if (eventListeners == null || eventListeners.isEmpty() == true) {
+            return;
+        }
+        BookEvent event = new BookEvent(this, cause);
+        Vector listeners;
+        synchronized (this) {
+            listeners = (Vector) eventListeners.clone();
+        }
+        Enumeration e = listeners.elements();
+        while (e.hasMoreElements() == true) {
+            BookEventListener l = (BookEventListener) e.nextElement();
+            l.actionPerformed(event);
         }
     }
 
@@ -150,7 +190,8 @@ public class PathsHashFile {
         try {
             writer = new FileWriter(this.logFile, false);
         } catch (IOException exception) {
-
+            fireEvents("When 'new FileWriter(...)'");
+            return;
         }
         if (writer == null) {
             return;
@@ -167,21 +208,25 @@ public class PathsHashFile {
             try {
                 writer.append("\r\n" + name + "\r\n");
             } catch (IOException exception) {
-
+                fireEvents("When 'FileWriter.append(...)'");
+                return;
             }
             for (String line : paragraph) {
                 try {
                     writer.append(line);
                 } catch (IOException exception) {
-
+                    fireEvents("When 'FileWriter.append(...)'");
+                    return;
                 }
             }
         }
         try {
             writer.close();
         } catch (IOException exception) {
-
+            fireEvents("When 'FileWriter.close()'");
+            return;
         }
+        fireEvents("Write to " + this.name + " - done !");
     }
 
     public Stream<String> readLineByLine ()
@@ -191,11 +236,17 @@ public class PathsHashFile {
             return output;
         }
         try {
-            output = Files.lines(this.logFile.toPath(), Charset.forName("ISO-8859-1"));
+            output = Files.lines(this.logFile.toPath(), Charset.forName(this.charsetName));
         } catch (IOException exception) {
-            System.out.println(exception.fillInStackTrace());
+            fireEvents("When 'Files.lines(...)'");
+            return null;
         }
         return output;
+    }
+
+    public void setCharsetName(String charsetName)
+    {
+        this.charsetName = charsetName;
     }
 
     public void setNeedUpdate (boolean value)

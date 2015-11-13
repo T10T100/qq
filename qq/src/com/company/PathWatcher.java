@@ -1,39 +1,24 @@
 package com.company;
 
-import com.sun.jmx.snmp.Timestamp;
-import javafx.util.converter.LocalDateTimeStringConverter;
-import javafx.util.converter.LocalTimeStringConverter;
-import javafx.util.converter.TimeStringConverter;
-
 import javax.swing.*;
-import javax.swing.text.DefaultFormatter;
 import javax.swing.tree.*;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Time;
 import java.text.DateFormat;
-import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
-import java.time.LocalTime;
-import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
  * Created by k on 28.10.2015.
  */
 
-public class TreeManager {
+public class PathWatcher {
 
     private PathIconManager iconManager;
     private int alignName;
@@ -41,16 +26,52 @@ public class TreeManager {
     private int alignDate;
     DateFormat dateFormat;
 
-    private JLabel statusOut;
+    private transient Vector eventListeners;
 
-    public TreeManager(PathIconManager iconManager, JLabel statusOut)
+    public PathWatcher(PathIconManager iconManager)
     {
         this.iconManager = iconManager;
-        this.statusOut = statusOut;
         dateFormat = new SimpleDateFormat("YYYY:MM:dd : HH:mm:ss");
         this.alignName = 80;
         this.alignSize = 16;
         this.alignDate = 20;
+    }
+
+    public void addEventListener (PathWatcherListener listener)
+    {
+        if (eventListeners == null) {
+            eventListeners = new Vector();
+        }
+        if (eventListeners.contains(listener) == false) {
+            eventListeners.add(listener);
+        }
+    }
+
+    public void removeEventListener (PathWatcherListener listener)
+    {
+        eventListeners.remove(listener);
+    }
+
+    public void removeAllListeners ()
+    {
+        eventListeners.removeAll(eventListeners);
+    }
+
+    private void fireEvents (PathWatcherStatus status)
+    {
+        if (eventListeners == null || eventListeners.isEmpty() == true) {
+            return;
+        }
+        PathWatcherEvent event = new PathWatcherEvent(this, status);
+        Vector listeners;
+        synchronized (this) {
+            listeners = (Vector) eventListeners.clone();
+        }
+        Enumeration e = listeners.elements();
+        while (e.hasMoreElements() == true) {
+            PathWatcherListener l = (PathWatcherListener) e.nextElement();
+            l.actionPerformed(event);
+        }
     }
 
     private PathTreeNode insertBranchByPath (PathTreeNode rootNode, Path path)
@@ -177,7 +198,7 @@ public class TreeManager {
         return insertBranchByRoot(tree, (PathTreeNode) tree.getLastSelectedPathComponent());
     }
 
-    private void makeHash (JTree tree, PathTreeNode fromNode, PathsHashFile hashFile)
+    private void makeHash (JTree tree, PathTreeNode fromNode, Book hashFile)
     {
         int items;
         Object o;
@@ -200,38 +221,42 @@ public class TreeManager {
         }
     }
 
-    public void makeHash (JTree tree, PathsHashFile hashFile)
+    public void makeHash (JTree tree, Book hashFile)
     {
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         PathTreeNode root = (PathTreeNode) model.getRoot();
-        statusOut.setText("gathering...");
         this.makeHash(tree, root, hashFile);
-        statusOut.setText("done!");
-
+        fireEvents(new PathWatcherStatus("hash!"));
         hashFile.writeToLog();hashFile.clear();hashFile.setNewBook("$hash$");
     }
 
-    public void watchHash (PathComparator comparator, boolean makeLog, PathsHashFile logFile, PathsHashFile hashFile)
+    public void watchHash (PathComparator comparator, boolean makeLog, Book logFile, Book hashFile)
     {
         Word word = new Word();
         comparator.resetAll();
-        statusOut.setText("watching...");
-        comparator.setTimeStart(System.nanoTime());
         Stream<String> stream = hashFile.readLineByLine();
 
+        comparator.setTimeStart(System.nanoTime());
         if (makeLog == false) {
             stream.forEach(line -> this.look(word, line, comparator, hashFile));
         } else {
             logFile.writeToCurrentParagraph(comparator.printKeys());
-            stream.forEach(line -> this.lookAndWriteLog(word, line, comparator, logFile, hashFile, "^~-~"));
-            logFile.writeToLog();logFile.clear();logFile.setNewBook("$log$");
+            try {
+                stream.forEach(line -> this.lookAndWriteLog(word, line, comparator, logFile, hashFile, "^~-~"));
+            } catch (UncheckedIOException exception) {
+                fireEvents(new PathWatcherStatus("Try another charset!"));
+                return;
+            }
+
+            logFile.writeToLog();logFile.clear();
+            logFile.setNewBook("$log$");
         }
-        stream.close();
-        statusOut.setText("done!");
         comparator.setTimeEnd(System.nanoTime());
+
+        stream.close();
     }
 
-    private void look (Word word, String line, PathComparator comparator, PathsHashFile hashFile)
+    private void look (Word word, String line, PathComparator comparator, Book hashFile)
     {
         word.setValue(line);
         ArrayList<String> attributes;
@@ -241,7 +266,7 @@ public class TreeManager {
         }
     }
 
-    private void lookAndWriteLog (Word word, String line, PathComparator comparator, PathsHashFile logFile, PathsHashFile hashFile, String trailer)
+    private void lookAndWriteLog (Word word, String line, PathComparator comparator, Book logFile, Book hashFile, String trailer)
     {
         word.setValue(line);
         ArrayList<String> attributes;
@@ -275,7 +300,6 @@ public class TreeManager {
             }
         }
     }
-
 
     public long expandRows (JTree tree)
     {
@@ -337,11 +361,11 @@ public class TreeManager {
                 format.format(new Date(file.lastModified())) + ">";
     }
 
-    public void setAligns (int allignName, int allignSize, int allignDate)
+    public void setAligns (int alignName, int alignSize, int alignDate)
     {
-        this.alignName = allignName;
-        this.alignSize = allignSize;
-        this.alignDate = allignDate;
+        this.alignName = alignName;
+        this.alignSize = alignSize;
+        this.alignDate = alignDate;
     }
 
     private String convertStringNumber (String number)

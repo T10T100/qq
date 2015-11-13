@@ -1,7 +1,5 @@
 package com.company;
 
-import sun.font.FontFamily;
-
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -10,13 +8,7 @@ import javax.swing.text.Highlighter;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * Created by Operator on 26.10.2015.
@@ -27,7 +19,6 @@ public class SetupForm extends JFrame {
     private JTextArea keyTexArea;
     private JCheckBox watchMode;
     private JButton stepButton;
-    private JLabel labelToShowSatus;
     private JLabel labelToCompare;
     private JLabel labelToMode;
     private JTree treeToPick;
@@ -41,21 +32,22 @@ public class SetupForm extends JFrame {
     private JTextArea parsedKeys;
     private JTextField searchField;
     private JCheckBox logOutEnable;
-    private JComboBox comboBox1;
+    private JComboBox charsetChooser;
+    private JLabel statusLabel;
 
     private JFileChooser saveOutputAsDialog;
 
 
     private PathTreeCellRenderer cellTreeRenderer;
-    private TreeManager treeManager;
+    private PathWatcher treeManager;
     private PathIconManager iconManager;
     private PathComparator pathComparator;
 
     private KeyParser keyParser;
 
 
-    PathsHashFile logObject;
-    PathsHashFile hashObject;
+    Book logObject;
+    Book hashObject;
     private boolean hashReady;
     private boolean makeLog;
 
@@ -70,7 +62,6 @@ public class SetupForm extends JFrame {
             "H:/",
             "I:/"
     };
-
     private String[] iconsPath = {
             "nfolder.jpg",
             "cfolder.jpg",
@@ -80,6 +71,14 @@ public class SetupForm extends JFrame {
             "ready.jpg",
             "file.jpg",
             "hfile.jpg"
+    };
+    private String[] charsets = {
+            "US-ASCII",
+            "ISO-8859-1",
+            "UTF-8",
+            "UTF-16BE",
+            "UTF-16LE",
+            "UTF-16"
     };
 
     private ArrayList<Color> highlightColors;
@@ -205,7 +204,7 @@ public class SetupForm extends JFrame {
 
     private void startUp() {
         int directorySelect = 0;
-        saveOutputAsDialog = new JFileChooser();
+        saveOutputAsDialog = new JFileChooser("Please select working directory : ");
         saveOutputAsDialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         directorySelect = saveOutputAsDialog.showOpenDialog(SetupForm.this);
 
@@ -213,10 +212,22 @@ public class SetupForm extends JFrame {
             this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
         }
 
-        logObject = new PathsHashFile("log.txt", saveOutputAsDialog.getSelectedFile(), "$log$");
-        hashObject = new PathsHashFile("hash.hash", saveOutputAsDialog.getSelectedFile(), "$hash$");
+        logObject = new Book("log.txt", saveOutputAsDialog.getSelectedFile(), "$log$");
+        hashObject = new Book("hash.hash", saveOutputAsDialog.getSelectedFile(), "$hash$");
         hashReady = false;
         makeLog = true;
+        logObject.addEventListener(new BookEventListener() {
+            @Override
+            public void actionPerformed(BookEvent event) {
+                statusLabel.setText(event.getCause());
+            }
+        });
+        hashObject.addEventListener(new BookEventListener() {
+            @Override
+            public void actionPerformed(BookEvent event) {
+                statusLabel.setText(event.getCause());
+            }
+        });
     }
 
     private void setUpInventory() {
@@ -233,7 +244,7 @@ public class SetupForm extends JFrame {
 
         keyParser = new KeyParser();
         iconManager = new PathIconManager(iconsPath);
-        treeManager = new TreeManager(iconManager, labelToShowSatus);
+        treeManager = new PathWatcher(iconManager);
         cellTreeRenderer = new PathTreeCellRenderer(tree1, false);
 
         logOutEnable.setSelected(true);
@@ -507,6 +518,19 @@ public class SetupForm extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == logOutEnable) {
                     makeLog = logOutEnable.isSelected();
+                }
+            }
+        });
+        for (String chset : charsets) {
+            charsetChooser.addItem(chset);
+        }
+        charsetChooser.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == charsetChooser) {
+                    hashObject.setCharsetName((String) charsetChooser.getSelectedItem());
+                    logObject.setCharsetName((String) charsetChooser.getSelectedItem());
+                    System.out.println((String) charsetChooser.getSelectedItem());
                 }
             }
         });

@@ -11,6 +11,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.sql.Time;
+import java.time.DateTimeException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -156,8 +157,14 @@ public class PathComparator {
         int seconds = (int)(nanos / 1000000000);
         int minutes = (seconds / 60) % 60;
         int hours = (minutes / 60) % 24;
-        LocalTime time = LocalTime.of(seconds, minutes, hours, 0);
-        return time.toString();
+        LocalTime time;
+        try {
+            time = LocalTime.of(seconds, minutes, hours, 0);
+            return time.toString();
+        } catch (DateTimeException exception) {
+            return "time exception!";
+        }
+
     }
 
     public String printKeys ()
