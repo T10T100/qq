@@ -41,6 +41,7 @@ public class SetupForm extends JFrame {
     private JTextArea parsedKeys;
     private JTextField searchField;
     private JCheckBox logOutEnable;
+    private JComboBox comboBox1;
 
     private JFileChooser saveOutputAsDialog;
 
