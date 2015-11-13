@@ -25,11 +25,6 @@ public class SetupForm extends JFrame {
     private JLabel treeInfoLabel;
     private JTree tree1;
     private JCheckBox expandMode;
-    private JButton resetButton;
-    private JButton expandButton;
-    private JButton expandAllButton;
-    private JButton buttonCollapseAll;
-    private JTextArea parsedKeys;
     private JTextField searchField;
     private JCheckBox logOutEnable;
     private JComboBox charsetChooser;
@@ -40,7 +35,6 @@ public class SetupForm extends JFrame {
 
     private PathTreeCellRenderer cellTreeRenderer;
     private PathWatcher treeManager;
-    private PathIconManager iconManager;
     private PathComparator pathComparator;
 
     private KeyParser keyParser;
@@ -61,16 +55,6 @@ public class SetupForm extends JFrame {
             "G:/",
             "H:/",
             "I:/"
-    };
-    private String[] iconsPath = {
-            "nfolder.jpg",
-            "cfolder.jpg",
-            "lfolder.jpg",
-            "locked.jpg",
-            "completed.jpg",
-            "ready.jpg",
-            "file.jpg",
-            "hfile.jpg"
     };
     private String[] charsets = {
             "US-ASCII",
@@ -243,12 +227,10 @@ public class SetupForm extends JFrame {
         highlightColorsIterator = highlightColors.iterator();
 
         keyParser = new KeyParser();
-        iconManager = new PathIconManager(iconsPath);
-        treeManager = new PathWatcher(iconManager);
+        treeManager = new PathWatcher();
         cellTreeRenderer = new PathTreeCellRenderer(tree1, false);
 
         logOutEnable.setSelected(true);
-        parsedKeys.setEditable(false);
         outputTextArea.setEditable(false);
         keyTexArea.setText("$");
 
@@ -398,55 +380,18 @@ public class SetupForm extends JFrame {
                 hashObject.setNeedUpdate(false);
             }
         });
-        resetButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                pathComparator.resetAll();
-                outputTextArea.setText("0");
-                keyTexArea.setText("'any'");
-                tree1.setModel(new DefaultTreeModel(new PathTreeNode("Added")));
-                treeToPick.setModel(new DefaultTreeModel(treeManager.makeTreeByName(hddRoots)));
-            }
-        });
-        expandButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == expandButton) {
-                    treeManager.expandRows(tree1);
-                }
-            }
-        });
-        expandAllButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == expandAllButton) {
-                    treeManager.expandAll(tree1);
-                    tree1.setFocusable(true);
-                    tree1.setFocusCycleRoot(true);
-                }
-            }
-        });
-        buttonCollapseAll.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == buttonCollapseAll) {
-                    treeManager.collapseAll(tree1);
-                }
-            }
-        });
     }
 
     private void initOthers ()
     {
+
         keyTexArea.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 super.keyTyped(e);
                 if (e.getSource() == keyTexArea) {
                     outputTextArea.setText("");
-                    parsedKeys.setText("");
-
-                    printWithHighlight(keyParser.parseToDefault(pathComparator, keyTexArea.getText()), parsedKeys);
+                    keyParser.parseToDefault(pathComparator, keyTexArea.getText());
                 }
             }
         });
@@ -456,6 +401,11 @@ public class SetupForm extends JFrame {
                 super.mouseEntered(e);
                 if (e.getSource() == keyTexArea) {
                     keyTexArea.selectAll();
+                    try {
+                        System.out.println(keyTexArea.getText(e.getX(), e.getY()));
+                    } catch (BadLocationException exception) {
+
+                    }
                     setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
                 }
             }

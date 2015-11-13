@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 public class PathWatcher {
 
-    private PathIconManager iconManager;
     private int alignName;
     private int alignSize;
     private int alignDate;
@@ -28,9 +27,8 @@ public class PathWatcher {
 
     private transient Vector eventListeners;
 
-    public PathWatcher(PathIconManager iconManager)
+    public PathWatcher()
     {
-        this.iconManager = iconManager;
         dateFormat = new SimpleDateFormat("YYYY:MM:dd : HH:mm:ss");
         this.alignName = 80;
         this.alignSize = 16;
@@ -80,15 +78,14 @@ public class PathWatcher {
         File file = null;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
             for (Path child : stream) {
-                node = new PathTreeNode(child, this.iconManager.fileIcon);
+                node = new PathTreeNode(child);
                 file = child.toFile();
                 if (file.isDirectory() == true) {
-                    node.setIcon(this.iconManager.nowFolderIcon);
                 } else {
                     if (file.isHidden() == true) {
-                        node.setIcon(this.iconManager.hiddenFileIcon);
+
                     } else {
-                        node.setIcon(this.iconManager.fileIcon);
+
                     }
                 }
                 rootNode.add(node);
@@ -173,14 +170,12 @@ public class PathWatcher {
             for (Path child : stream) {
                 file = child.toFile();
                 if (file.exists() == true) {
-                    childNode = new PathTreeNode(child, this.iconManager.fileIcon);
+                    childNode = new PathTreeNode(child);
                     if (file.isDirectory() == true) {
-                        childNode.setIcon(this.iconManager.nowFolderIcon);
                     } else {
                         if (file.isHidden() == true) {
-                            childNode.setIcon(this.iconManager.hiddenFileIcon);
                         } else {
-                            childNode.setIcon(this.iconManager.fileIcon);
+
                         }
                     }
                     model.insertNodeInto(childNode, root, 0);
