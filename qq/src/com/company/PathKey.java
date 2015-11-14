@@ -6,13 +6,13 @@ import java.util.ArrayList;
 /**
  * Created by k on 06.11.2015.
  */
-public class pathCompareKey {
+public class PathKey {
     protected Word key;
     protected int matched;
     protected long matchedSize;
     protected int matchedToArgs;
 
-    public pathCompareKey (Word key)
+    public PathKey(Word key)
     {
         this.key = key;
         this.matched = 0;

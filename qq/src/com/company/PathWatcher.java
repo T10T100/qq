@@ -74,25 +74,13 @@ public class PathWatcher {
 
     private PathTreeNode insertBranchByPath (PathTreeNode rootNode, Path path)
     {
-        PathTreeNode node = null;
-        File file = null;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
             for (Path child : stream) {
-                node = new PathTreeNode(child);
-                file = child.toFile();
-                if (file.isDirectory() == true) {
-                } else {
-                    if (file.isHidden() == true) {
-
-                    } else {
-
-                    }
-                }
-                rootNode.add(node);
+                rootNode.add(new PathTreeNode(child));
             }
         }
         catch (IOException e){
-            System.out.println(e.getCause().toString());
+            fireEvents(new PathWatcherStatus("Cannot create a branch"));
         }
         return rootNode;
     }
@@ -171,19 +159,12 @@ public class PathWatcher {
                 file = child.toFile();
                 if (file.exists() == true) {
                     childNode = new PathTreeNode(child);
-                    if (file.isDirectory() == true) {
-                    } else {
-                        if (file.isHidden() == true) {
-                        } else {
-
-                        }
-                    }
                     model.insertNodeInto(childNode, root, 0);
                 }
             }
         }
         catch (IOException e){
-
+            fireEvents(new PathWatcherStatus("Cannot open folder"));
         }
         return root;
     }
@@ -199,9 +180,6 @@ public class PathWatcher {
         Object o;
         if (fromNode.isLeaf() == true) {
             o = fromNode.getUserObject();
-            if (o == null) {
-                return;
-            }
             File file = new File(o.toString());
             if (file.isDirectory() == true) {
                 insertBranchByRoot(tree, fromNode);

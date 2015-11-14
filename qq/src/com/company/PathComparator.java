@@ -1,21 +1,10 @@
 package com.company;
 
-import sun.management.*;
-import sun.security.timestamp.Timestamper;
-
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.FileSystem;
-import java.nio.file.attribute.UserPrincipalLookupService;
-import java.nio.file.spi.FileSystemProvider;
-import java.sql.Time;
 import java.time.DateTimeException;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Set;
 
 /**
  * Created by k on 28.10.2015.
@@ -26,7 +15,7 @@ public class PathComparator {
     private long timeEnd;
     private long totalSize;
     private long watched;
-    ArrayList<pathCompareKey> keys = new ArrayList<>();
+    ArrayList<PathKey> keys = new ArrayList<>();
 
     public PathComparator ()
     {
@@ -38,7 +27,7 @@ public class PathComparator {
     {
         keys.removeAll(keys);
         for (Word word : words) {
-            keys.add(new pathCompareKey(word));
+            keys.add(new PathKey(word));
         }
     }
 
@@ -54,7 +43,7 @@ public class PathComparator {
 
     public void resetAll ()
     {
-        for (pathCompareKey key : keys) {
+        for (PathKey key : keys) {
             key.clearAll();
         }
         this.watched = 0;
@@ -65,7 +54,7 @@ public class PathComparator {
     {
         this.watched++;
         this.totalSize += file.length();
-        for (pathCompareKey key : keys) {
+        for (PathKey key : keys) {
             key.compare(file.getName(), file.length());
         }
         return true;
@@ -75,7 +64,7 @@ public class PathComparator {
     {
         this.watched++;
         this.totalSize += size;
-        for (pathCompareKey key : keys) {
+        for (PathKey key : keys) {
             key.compare(name, size);
         }
         return true;
@@ -88,7 +77,7 @@ public class PathComparator {
         this.watched++;
         this.totalSize += size;
         boolean all = true;
-        for (pathCompareKey key : keys) {
+        for (PathKey key : keys) {
             if (key.compare(name, size) == true) {
                 log += " [" + key.getKey().getName() + "] ";
                 matched++;
@@ -115,7 +104,7 @@ public class PathComparator {
         items.add(new textBoundedItem("Watched :    " + Long.toString(this.watched) + " Paths", Color.LIGHT_GRAY));
         items.add(new textBoundedItem("Total Size : " + this.printSize(this.totalSize), new Color(227, 73, 59, 150)));
 
-        for (pathCompareKey key : keys) {
+        for (PathKey key : keys) {
             items.addAll(key.getTextItems());
         }
         return items;
@@ -128,7 +117,7 @@ public class PathComparator {
         String output = "Watch time : " + this.printTime(this.timeEnd - this.timeStart) + "\n";
         output += "Watched : \"" + Long.toString(this.watched) + "\" Paths\n" +
                   "Total Size : " + this.printSize(this.totalSize) + "\n\n";
-        for (pathCompareKey key : keys) {
+        for (PathKey key : keys) {
             output += key.toString();
         }
         return output;
@@ -170,7 +159,7 @@ public class PathComparator {
     public String printKeys ()
     {
         String output = "Keys (" + Integer.toString(keys.size()) + ") -> ";
-        for (pathCompareKey key : keys) {
+        for (PathKey key : keys) {
             output += "[" + key.getKey().getName() + "]-";
         }
         return output;

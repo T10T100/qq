@@ -15,10 +15,9 @@ public class KeyParser {
     }
 
 
-    public ArrayList<textBoundedItem> parseToDefault (PathComparator comparator, String in, String... args)
+    public void setUp(PathComparator comparator, String in, String... args)
     {
         String garbage = "[garbage]";
-        ArrayList<textBoundedItem> output = new ArrayList<>();
 
         ArrayList<Word> templates = this.getArrayOfWords(in, '{', '}');
         if (templates.isEmpty() == false) {
@@ -71,7 +70,7 @@ public class KeyParser {
                 int bottomValue = Integer.parseInt(word.getName());
                 int topValue = Integer.parseInt(word.getValue());
                 for (int i = bottomValue; i <= topValue; i++) {
-                    keysToinsert.add(new Word(Integer.toString(i), "numeric"));
+                    keysToinsert.add(new Word(Integer.toString(i), ""));
                 }
             }
         }
@@ -80,21 +79,6 @@ public class KeyParser {
 
         comparator.setUp(keys);
 
-        output.add(new textBoundedItem("Collected keys : ", new Color(0, 10, 150, 100)));
-        for (Word w : keys) {
-            output.add(new textBoundedItem(w.toString(), new Color(0, 10, 150, 50)));
-        }
-
-        output.add(new textBoundedItem("\nTemplates : ", new Color(130, 20, 20, 100)));
-        for (Word w :templates) {
-            output.add(new textBoundedItem(w.toString(), new Color(130, 20, 20, 50)));
-        }
-
-        output.add(new textBoundedItem("\nUnrecognized : ", new Color(20, 20, 20, 100)));
-        output.add(new textBoundedItem(garbage, new Color(20, 20, 20, 100)));
-        output.add(new textBoundedItem("\nSystem : ", Color.orange));
-        output.add(new textBoundedItem(comparator.getSystemInfo(), Color.orange));
-        return output;
     }
 
     private ArrayList<Word> getArrayOfWords (String input, char begin, char end)

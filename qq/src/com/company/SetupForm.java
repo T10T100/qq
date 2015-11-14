@@ -391,7 +391,7 @@ public class SetupForm extends JFrame {
                 super.keyTyped(e);
                 if (e.getSource() == keyTexArea) {
                     outputTextArea.setText("");
-                    keyParser.parseToDefault(pathComparator, keyTexArea.getText());
+                    keyParser.setUp(pathComparator, keyTexArea.getText());
                 }
             }
         });
