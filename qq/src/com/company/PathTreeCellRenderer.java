@@ -59,8 +59,10 @@ public class PathTreeCellRenderer extends DefaultTreeCellRenderer {
     {
         JComponent comp = (JComponent) super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
         comp.setOpaque(true);
+
         boolean highlight = (oldSelectedPath != null) && (value == oldSelectedPath.getLastPathComponent());
         PathTreeNode node = (PathTreeNode) value;
+
         if (highlight == true) {
             comp.setBackground(Color.PINK);
         } else {
@@ -70,7 +72,7 @@ public class PathTreeCellRenderer extends DefaultTreeCellRenderer {
                 comp.setBackground(tree.getBackground());
             }
         }
-
+        /*
         if (!leaf) {
             if (node.getIcon() != null) {
                 setClosedIcon(node.getIcon());
@@ -80,6 +82,7 @@ public class PathTreeCellRenderer extends DefaultTreeCellRenderer {
                 setOpenIcon(getDefaultClosedIcon());
             }
         }
+        */
         return comp;
     }
 

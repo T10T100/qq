@@ -34,7 +34,7 @@ public class SetupForm extends JFrame {
 
 
     private PathTreeCellRenderer cellTreeRenderer;
-    private PathWatcher treeManager;
+    private PathWatcher pathWatcher;
     private PathComparator pathComparator;
 
     private KeyParser keyParser;
@@ -212,6 +212,13 @@ public class SetupForm extends JFrame {
                 statusLabel.setText(event.getCause());
             }
         });
+        pathWatcher.addEventListener(new PathWatcherListener() {
+            @Override
+            public void actionPerformed(PathWatcherEvent event) {
+                statusLabel.setText(event.getStatus().toString());
+            }
+        });
+
     }
 
     private void setUpInventory() {
@@ -227,7 +234,7 @@ public class SetupForm extends JFrame {
         highlightColorsIterator = highlightColors.iterator();
 
         keyParser = new KeyParser();
-        treeManager = new PathWatcher();
+        pathWatcher = new PathWatcher();
         cellTreeRenderer = new PathTreeCellRenderer(tree1, false);
 
         logOutEnable.setSelected(true);
@@ -235,11 +242,11 @@ public class SetupForm extends JFrame {
         keyTexArea.setText("$");
 
 
-        treeToPick.setModel(new DefaultTreeModel(treeManager.makeTreeByName(hddRoots)));
+        treeToPick.setModel(new DefaultTreeModel(pathWatcher.makeTreeByName(hddRoots)));
         treeToPick.setCellRenderer(new PathTreeCellRenderer(treeToPick, false));
         treeToPick.setBackground(Color.WHITE);
 
-        tree1.setModel(new DefaultTreeModel(treeManager.makeTreeByName("")));
+        tree1.setModel(new DefaultTreeModel(pathWatcher.makeTreeByName("")));
         tree1.setCellRenderer(cellTreeRenderer);
         tree1.setBackground(Color.WHITE);
 
@@ -302,7 +309,7 @@ public class SetupForm extends JFrame {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
                 if (e.getSource() == treeToPick) {
-                    treeManager.createBranchAndInsertFromSelected(treeToPick);
+                    pathWatcher.createBranchAndInsertFromSelected(treeToPick);
                 }
             }
         });
@@ -315,7 +322,7 @@ public class SetupForm extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 if (e.getSource() == tree1) {
                     if (SwingUtilities.isRightMouseButton(e)) {
-                        treeManager.removeSelected(tree1);
+                        pathWatcher.removeSelected(tree1);
                     }
                 }
             }
@@ -354,7 +361,7 @@ public class SetupForm extends JFrame {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
                 if (e.getSource() == tree1) {
-                    treeManager.createBranchAndInsertFromSelected(tree1);
+                    pathWatcher.createBranchAndInsertFromSelected(tree1);
                 }
             }
         });
@@ -370,10 +377,10 @@ public class SetupForm extends JFrame {
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
                 if (hashReady == false) {
-                    treeManager.makeHash(tree1, hashObject);
+                    pathWatcher.makeHash(tree1, hashObject);
                     hashReady = true;
                 }
-                treeManager.watchHash(pathComparator, makeLog, logObject, hashObject);
+                pathWatcher.watchHash(pathComparator, makeLog, logObject, hashObject);
 
                 setCursor(Cursor.getDefaultCursor());
                 printWithHighlight(pathComparator.getTextItems(), outputTextArea);

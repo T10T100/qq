@@ -134,23 +134,15 @@ public class PathWatcher {
 
     public PathTreeNode insertBranchByRoot (JTree tree, PathTreeNode root)
     {
-        if (root == null) {
-            return new PathTreeNode("null");
-        }
-        if (root.isLeaf() == false) {
-            return new PathTreeNode("not a leaf");
-        }
         DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
-
-        Object obj = root.getUserObject();
+        Object obj = null;
+        try {
+           obj  = root.getUserObject();
+        } catch (NullPointerException exception) {
+            fireEvents(new PathWatcherStatus("Cannot delete this!"));
+            return root;
+        }
         Path path = Paths.get(obj.toString());
-
-        if (Files.exists(path) == false) {
-            return new PathTreeNode("null");
-        }
-        if (Files.isDirectory(path) == false) {
-            return new PathTreeNode("file ?");
-        }
 
         PathTreeNode childNode = null;
         File file = null;
