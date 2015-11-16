@@ -57,8 +57,8 @@ public class SetupForm extends JFrame {
             "I:/"
     };
     private String[] charsets = {
-            "US-ASCII",
             "ISO-8859-1",
+            "US-ASCII",
             "UTF-8",
             "UTF-16BE",
             "UTF-16LE",
@@ -219,6 +219,8 @@ public class SetupForm extends JFrame {
         hashObject = new Book("hash.hash", saveOutputAsDialog.getSelectedFile(), "$hash$");
         hashReady = false;
         makeLog = true;
+        logObject.setCharsetName("ISO-8859-1");
+        hashObject.setCharsetName("ISO-8859-1");
         logObject.addEventListener(new BookEventListener() {
             @Override
             public void actionPerformed(BookEvent event) {
@@ -342,6 +344,7 @@ public class SetupForm extends JFrame {
                 if (e.getSource() == tree1) {
                     if (SwingUtilities.isRightMouseButton(e)) {
                         pathWatcher.removeSelected(tree1);
+                        hashReady = false;
                     }
                 }
             }

@@ -263,4 +263,9 @@ public class Book {
     {
         return exist;
     }
+
+    public boolean isParagraphExist (String name)
+    {
+        return this.book.containsKey(name);
+    }
 }

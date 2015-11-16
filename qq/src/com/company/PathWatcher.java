@@ -179,8 +179,17 @@ public class PathWatcher {
             File file = new File(o.toString());
             if (file.isDirectory() == true) {
                 insertBranchByRoot(tree, fromNode);
+                /*
+                if (hashFile.isParagraphExist(file.getName()) == false) {
+                    hashFile.writeToCurrentParagraph(this.printDirToHash(file, dateFormat));
+                }
+                */
             } else {
-                hashFile.writeToCurrentParagraph(this.printFileToHash(file, dateFormat));
+                try {
+                    hashFile.writeToExistingParagraph(file.getParent().toString(), this.printFileToHash(file, dateFormat));
+                } catch (NullPointerException exception) {
+
+                }
                 return;
             }
         }
@@ -195,7 +204,7 @@ public class PathWatcher {
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         PathTreeNode root = (PathTreeNode) model.getRoot();
         this.makeHash(tree, root, hashFile);
-        fireEvents(new PathWatcherStatus("hash!"));
+        //fireEvents(new PathWatcherStatus("hash!"));
         hashFile.writeToLog();hashFile.clear();hashFile.setNewBook("$hash$");
     }
 
@@ -247,7 +256,7 @@ public class PathWatcher {
         int sizeSize;
         int dateSize;
         attributes = word.getArrayFromValue('<', '>');
-        if (attributes.size() >= 2) {
+        if (attributes.size() >= 3) {
             name = attributes.get(1);
             size = attributes.get(2);
             date = attributes.get(3);
