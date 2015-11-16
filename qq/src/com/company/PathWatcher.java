@@ -80,7 +80,7 @@ public class PathWatcher {
             }
         }
         catch (IOException e){
-            fireEvents(new PathWatcherStatus("Cannot create a branch"));
+            //fireEvents(new PathWatcherStatus("Cannot create a branch"));
         }
         return rootNode;
     }
@@ -139,7 +139,7 @@ public class PathWatcher {
         try {
            obj  = root.getUserObject();
         } catch (NullPointerException exception) {
-            fireEvents(new PathWatcherStatus("Cannot delete this!"));
+            //fireEvents(new PathWatcherStatus("Cannot delete this!"));
             return root;
         }
         Path path = Paths.get(obj.toString());
@@ -156,7 +156,7 @@ public class PathWatcher {
             }
         }
         catch (IOException e){
-            fireEvents(new PathWatcherStatus("Cannot open folder"));
+            //fireEvents(new PathWatcherStatus("Cannot open folder"));
         }
         return root;
     }
@@ -171,7 +171,11 @@ public class PathWatcher {
         int items;
         Object o;
         if (fromNode.isLeaf() == true) {
-            o = fromNode.getUserObject();
+            try {
+                o = fromNode.getUserObject();
+            } catch (NullPointerException exception) {
+                return;
+            }
             File file = new File(o.toString());
             if (file.isDirectory() == true) {
                 insertBranchByRoot(tree, fromNode);

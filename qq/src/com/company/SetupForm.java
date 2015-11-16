@@ -150,7 +150,25 @@ public class SetupForm extends JFrame {
                             matchedMarks.add(new TextMark(num.getStartIndex(), num.getEndIndex(), keyHighColor));
                         }
                     }
-                } else {
+                } else if (text.contains("-") == true) {
+                    String insert = "";
+                    String test = "";
+                    int indexOf = text.indexOf("-");
+                    if (indexOf >= 1 && text.length() >= 3) {
+                        insert = text.substring(3, text.length());
+                        int l = insert.length() + 1;
+                        int startIndex = (int)text.charAt(indexOf - 1);
+                        int endIndex = (int)text.charAt(indexOf + 1);
+                        if (startIndex <= endIndex) {
+                            for (int i = startIndex; i <= endIndex; i++) {
+                                test = Character.toString((char)i) + insert;
+                                for (int index = input.indexOf(test); index >= 0; index = input.indexOf(test, index + 1)) {
+                                    matchedMarks.add(new TextMark(index, index + l, keyHighColor));
+                                }
+                            }
+                        }
+                    }
+                }else {
                     for (int index = input.indexOf(text); index >= 0; index = input.indexOf(text, index + 1)) {
                         matchedMarks.add(new TextMark(index, index + text.length(), keyHighColor));
                     }
@@ -188,6 +206,7 @@ public class SetupForm extends JFrame {
 
     private void startUp() {
         int directorySelect = 0;
+        statusLabel.setBackground(Color.pink);
         saveOutputAsDialog = new JFileChooser("Please select working directory : ");
         saveOutputAsDialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         directorySelect = saveOutputAsDialog.showOpenDialog(SetupForm.this);
