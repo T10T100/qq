@@ -20,7 +20,7 @@ public class Book {
     private ArrayList<Path> index;
     private ArrayList<Book> childs;
     private Path root;
-    private final int linesLimit = 10000;
+    private final int linesLimit = 50000;
     private int linesCount;
     private String charsetName;
 

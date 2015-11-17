@@ -91,8 +91,12 @@ public class PathWatcher {
         if (model.getRoot() == node) {
             return;
         }
-        if (node != null) {
-            model.removeNodeFromParent(node);
+        try {
+            if (node != null) {
+                model.removeNodeFromParent(node);
+            }
+        } catch (NullPointerException exception) {
+
         }
     }
 
@@ -136,6 +140,9 @@ public class PathWatcher {
     {
         DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
         Object obj = null;
+        if (root.isLeaf() == false) {
+            return root;
+        }
         try {
            obj  = root.getUserObject();
         } catch (NullPointerException exception) {
@@ -168,45 +175,19 @@ public class PathWatcher {
         return insertBranchByRoot(tree, (PathTreeNode) tree.getLastSelectedPathComponent());
     }
 
-    private void makeHash (JTree tree, PathTreeNode fromNode, Book hashFile)
+
+    private void unwindPath (Path path, Book hash)
     {
-        int items;
-        Object o;
-        try {
-            if (fromNode.isLeaf() == true) {
-                try {
-                    o = fromNode.getUserObject();
-                } catch (NullPointerException exception) {
-                    return;
+        if (Files.isDirectory(path) == true) {
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+                for (Path child : stream) {
+                    unwindPath(child, hash);
                 }
-                File file = new File(o.toString());
-                if (file.isDirectory() == true) {
-                    insertBranchByRoot(tree, fromNode);
-                /*
-                if (hashFile.isParagraphExist(file.getName()) == false) {
-                    hashFile.writeToCurrentParagraph(this.printDirToHash(file, dateFormat));
-                }
-                */
-                } else {
-                    /*
-                    if (hashFile.getLineCount() > 2000) {
-                        return;
-                    }
-                    */
-                    try {
-                        hashFile.write(this.printFileToHash(file, dateFormat));
-                    } catch (NullPointerException exception) {
+            } catch (IOException exception) {
 
-                    }
-                    return;
-                }
             }
-        } catch (NullPointerException exception) {
-
-        }
-        items = fromNode.getChildCount();
-        for (int i = 0; i < items; i++) {
-            makeHash(tree, (PathTreeNode)fromNode.getChildAt(i), hashFile);
+        } else {
+            hash.write(this.printFileToHash(new File(path.toString()), dateFormat));
         }
     }
 
@@ -214,8 +195,15 @@ public class PathWatcher {
     {
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         PathTreeNode root = (PathTreeNode) model.getRoot();
+        Path p;
         hashFile.cleanUp();
-        this.makeHash(tree, root, hashFile);
+        int childCount = root.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            p = Paths.get(root.getChildAt(i).toString());
+            if (Files.exists(p) == true) {
+                unwindPath(p, hashFile);
+            }
+        }
         hashFile.finish();
         //fireEvents(new PathWatcherStatus("hash!"));
     }
@@ -235,7 +223,7 @@ public class PathWatcher {
             }
             try {
                 if (makeLog == false) {
-                    output.forEach(line -> this.look(word, line, comparator, hashFile));
+                    output.forEach(line -> this.look(word, line, comparator));
                 } else {
                     output.forEach(line -> this.lookAndWriteLog(word, line, comparator, logFile, hashFile, "^~-~"));
                     logFile.finish();
@@ -251,7 +239,7 @@ public class PathWatcher {
 
     }
 
-    private void look (Word word, String line, PathComparator comparator, Book hashFile)
+    private void look (Word word, String line, PathComparator comparator)
     {
         word.setValue(line);
         ArrayList<String> attributes;
