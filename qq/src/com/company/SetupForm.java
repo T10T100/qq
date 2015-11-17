@@ -8,6 +8,11 @@ import javax.swing.text.Highlighter;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -42,6 +47,7 @@ public class SetupForm extends JFrame {
 
     Book logObject;
     Book hashObject;
+    private Path workingRoot;
     private boolean hashReady;
     private boolean makeLog;
 
@@ -69,6 +75,26 @@ public class SetupForm extends JFrame {
     private Iterator<Color> highlightColorsIterator;
 
 
+    private class WindowEventListener implements WindowListener {
+        public void windowClosing(WindowEvent arg0) {
+            hashObject.cleanAll();
+            try {
+                Files.deleteIfExists(workingRoot);
+            } catch (IOException exception) {
+
+            }
+            System.exit(0);
+        }
+
+        public void windowOpened(WindowEvent arg0) {}
+        public void windowClosed(WindowEvent arg0) {}
+        public void windowIconified(WindowEvent arg0) {}
+        public void windowDeiconified(WindowEvent arg0) {}
+        public void windowActivated(WindowEvent arg0) {}
+        public void windowDeactivated(WindowEvent arg0) {}
+    }
+
+
     public SetupForm() {
         super("Path Watcher");
         setContentPane(contentPanel);
@@ -89,11 +115,9 @@ public class SetupForm extends JFrame {
         setVisible(true);
     }
 
-
     public void doNothing() {
 
     }
-
 
     private void printWithHighlight(ArrayList<textBoundedItem> items, JTextArea textArea) {
         textArea.setText("");
@@ -211,28 +235,28 @@ public class SetupForm extends JFrame {
         saveOutputAsDialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         directorySelect = saveOutputAsDialog.showOpenDialog(SetupForm.this);
 
+        File file = saveOutputAsDialog.getSelectedFile();
         if (directorySelect == JFileChooser.CANCEL_OPTION || directorySelect == JFileChooser.ERROR_OPTION) {
             this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
         }
 
-        logObject = new Book("log.txt", saveOutputAsDialog.getSelectedFile(), "$log$");
-        hashObject = new Book("hash.hash", saveOutputAsDialog.getSelectedFile(), "$hash$");
+        String wp = file.toPath().toString() + File.separator + "KAPITON_CHUCHELO";
+        workingRoot = Paths.get(wp);
+        file = new File(wp);
+        if (file.exists() == false) {
+            file.mkdir();
+        }
+
+        hashObject = new Book(file, "pwh");
+        logObject = hashObject.newFromThis("txt");
+
+        this.addWindowListener(new WindowEventListener());
+
         hashReady = false;
         makeLog = true;
         logObject.setCharsetName("ISO-8859-1");
         hashObject.setCharsetName("ISO-8859-1");
-        logObject.addEventListener(new BookEventListener() {
-            @Override
-            public void actionPerformed(BookEvent event) {
-                statusLabel.setText(event.getCause());
-            }
-        });
-        hashObject.addEventListener(new BookEventListener() {
-            @Override
-            public void actionPerformed(BookEvent event) {
-                statusLabel.setText(event.getCause());
-            }
-        });
+
         pathWatcher.addEventListener(new PathWatcherListener() {
             @Override
             public void actionPerformed(PathWatcherEvent event) {
@@ -406,7 +430,6 @@ public class SetupForm extends JFrame {
 
                 setCursor(Cursor.getDefaultCursor());
                 printWithHighlight(pathComparator.getTextItems(), outputTextArea);
-                hashObject.setNeedUpdate(false);
             }
         });
     }

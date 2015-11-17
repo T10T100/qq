@@ -144,14 +144,16 @@ public class PathWatcher {
         }
         Path path = Paths.get(obj.toString());
 
-        PathTreeNode childNode = null;
         File file = null;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
             for (Path child : stream) {
-                file = child.toFile();
-                if (file.exists() == true) {
-                    childNode = new PathTreeNode(child);
-                    model.insertNodeInto(childNode, root, 0);
+                try {
+                    file = child.toFile();
+                    if (file.exists() == true) {
+                        model.insertNodeInto(new PathTreeNode(child), root, 0);
+                    }
+                } catch (NullPointerException exception) {
+
                 }
             }
         }
@@ -170,28 +172,37 @@ public class PathWatcher {
     {
         int items;
         Object o;
-        if (fromNode.isLeaf() == true) {
-            try {
-                o = fromNode.getUserObject();
-            } catch (NullPointerException exception) {
-                return;
-            }
-            File file = new File(o.toString());
-            if (file.isDirectory() == true) {
-                insertBranchByRoot(tree, fromNode);
+        try {
+            if (fromNode.isLeaf() == true) {
+                try {
+                    o = fromNode.getUserObject();
+                } catch (NullPointerException exception) {
+                    return;
+                }
+                File file = new File(o.toString());
+                if (file.isDirectory() == true) {
+                    insertBranchByRoot(tree, fromNode);
                 /*
                 if (hashFile.isParagraphExist(file.getName()) == false) {
                     hashFile.writeToCurrentParagraph(this.printDirToHash(file, dateFormat));
                 }
                 */
-            } else {
-                try {
-                    hashFile.writeToExistingParagraph(file.getParent().toString(), this.printFileToHash(file, dateFormat));
-                } catch (NullPointerException exception) {
+                } else {
+                    /*
+                    if (hashFile.getLineCount() > 2000) {
+                        return;
+                    }
+                    */
+                    try {
+                        hashFile.write(this.printFileToHash(file, dateFormat));
+                    } catch (NullPointerException exception) {
 
+                    }
+                    return;
                 }
-                return;
             }
+        } catch (NullPointerException exception) {
+
         }
         items = fromNode.getChildCount();
         for (int i = 0; i < items; i++) {
@@ -203,35 +214,41 @@ public class PathWatcher {
     {
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         PathTreeNode root = (PathTreeNode) model.getRoot();
+        hashFile.cleanUp();
         this.makeHash(tree, root, hashFile);
+        hashFile.finish();
         //fireEvents(new PathWatcherStatus("hash!"));
-        hashFile.writeToLog();hashFile.clear();hashFile.setNewBook("$hash$");
     }
 
     public void watchHash (PathComparator comparator, boolean makeLog, Book logFile, Book hashFile)
     {
         Word word = new Word();
         comparator.resetAll();
-        Stream<String> stream = hashFile.readLineByLine();
-
+        ArrayList<Path> paths = hashFile.getIndex();
+        Stream<String> output = null;
         comparator.setTimeStart(System.nanoTime());
-        if (makeLog == false) {
-            stream.forEach(line -> this.look(word, line, comparator, hashFile));
-        } else {
-            logFile.writeToCurrentParagraph(comparator.printKeys());
+        for (Path path : paths) {
             try {
-                stream.forEach(line -> this.lookAndWriteLog(word, line, comparator, logFile, hashFile, "^~-~"));
-            } catch (UncheckedIOException exception) {
-                fireEvents(new PathWatcherStatus("Try another charset!"));
-                return;
+                output = Files.lines(path, hashFile.getCharset());
+            } catch (IOException exception) {
+                continue;
             }
-
-            logFile.writeToLog();logFile.clear();
-            logFile.setNewBook("$log$");
+            try {
+                if (makeLog == false) {
+                    output.forEach(line -> this.look(word, line, comparator, hashFile));
+                } else {
+                    output.forEach(line -> this.lookAndWriteLog(word, line, comparator, logFile, hashFile, "^~-~"));
+                    logFile.finish();
+                }
+            } catch (UncheckedIOException exception) {
+                continue;
+            }
+            if (output != null) {
+                output.close();
+            }
         }
         comparator.setTimeEnd(System.nanoTime());
 
-        stream.close();
     }
 
     private void look (Word word, String line, PathComparator comparator, Book hashFile)
@@ -274,7 +291,7 @@ public class PathWatcher {
             date = this.insertTrail(date, trailer, dateSize);
 
             if (postfix.isEmpty() == false) {
-                logFile.writeToCurrentParagraph(name + "size- " + size + "date- " + date + " matched to- <" + postfix + ">");
+                logFile.write(name + "size- " + size + "date- " + date + " matched to- <" + postfix + ">");
             }
         }
     }

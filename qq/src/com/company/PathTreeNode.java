@@ -13,7 +13,6 @@ import java.nio.file.Paths;
  */
 public class PathTreeNode extends DefaultMutableTreeNode {
     private ImageIcon icon;
-    private boolean hasChilds;
     private boolean hasMatch;
 
 

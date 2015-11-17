@@ -15,257 +15,167 @@ import java.util.stream.Stream;
  * Created by k on 11.11.2015.
  */
 public class Book {
-    private final String name;
-    private final String location;
-    private final File logFile;
-    private boolean needUpdate;
-    private boolean exist;
+    private String name;
+    private ArrayList<String> text;
+    private ArrayList<Path> index;
+    private ArrayList<Book> childs;
+    private Path root;
+    private final int linesLimit = 10000;
+    private int linesCount;
     private String charsetName;
-    private Vector eventListeners;
 
-    private Map<String, ArrayList<String>> book;
-    private ArrayList<String> paragraph;
-    public Book(String name, String location, String bookName)
+
+    public Book(File location, String bookName)
     {
-        this.book = new HashMap<>();
-        this.book.put(bookName, new ArrayList<>());
-        this.paragraph = book.get(bookName);
-        this.exist = false;
-        this.needUpdate = true;
-        this.name = name;
-        this.location = location;
-        Path path = Paths.get(location);
-        if (Files.exists(path) == false) {
-            logFile = null;
-            return;
-        }
-        if (Files.isDirectory(path) == false) {
-            logFile = null;
-            return;
-        }
-        if (name.contains(".") == false) {
-            logFile = null;
-            return;
-        }
-        logFile = new File(location + File.separator + name);
-        try {
-            if (Files.deleteIfExists(logFile.toPath()) == true) {
-
-            } else {
-
-            }
-
-        } catch (IOException exception) {
-
-        }
-        logFile.getParentFile().mkdirs();
-        try {
-            if (logFile.createNewFile() == true) {
-                this.exist = true;
-            } else {
-
-            }
-        } catch (IOException exception) {
-
-        }
-        this.charsetName = "UTF-16";
+        index = new ArrayList<>();
+        text = new ArrayList<>();
+        childs = new ArrayList<>();
+        this.name = bookName;
+        this.root = location.toPath();
+        this.linesCount = 0;
     }
 
-    public Book(String name, File location, String bookName)
+    public Book newFromThis (String bookName)
     {
-        this.book = new HashMap<>();
-        this.book.put(bookName, new ArrayList<>());
-        this.paragraph = book.get(bookName);
-        this.exist = false;
-        this.needUpdate = true;
-        this.name = name;
-        this.location = location.toString();
-        if (name.contains(".") == false) {
-            logFile = null;
-            return;
+        File file = new File(root + File.separator + "LOG");
+        if (file.exists() == false) {
+            file.mkdir();
         }
-        logFile = new File(location.toPath().toString() + File.separator + name);
-        try {
-            if (Files.deleteIfExists(logFile.toPath()) == true) {
-            } else {
-
-            }
-
-        } catch (IOException exception) {
-
+        Book book = new Book(file, bookName);
+        if (this.childs.contains(book) == false) {
+            this.childs.add(book);
         }
-        logFile.getParentFile().mkdirs();
-        try {
-            if (logFile.createNewFile() == true) {
-                this.exist = true;
-            } else {
 
-            }
-        } catch (IOException exception) {
-
-        }
-        this.charsetName = "UTF-16";
+        return book;
     }
 
-    public void addEventListener (BookEventListener listener)
+    public void write (String line)
     {
-        if (eventListeners == null) {
-            eventListeners = new Vector();
-        }
-        if (eventListeners.contains(listener) == false) {
-            eventListeners.add(listener);
-        }
-    }
-    public void removeEventListener (BookEventListener listener)
-    {
-        eventListeners.remove(listener);
-    }
-
-    public void removeAllListeners ()
-    {
-        eventListeners.removeAll(eventListeners);
-    }
-
-    private void fireEvents (String cause)
-    {
-        if (eventListeners == null || eventListeners.isEmpty() == true) {
-            return;
-        }
-        BookEvent event = new BookEvent(this, cause);
-        Vector listeners;
-        synchronized (this) {
-            listeners = (Vector) eventListeners.clone();
-        }
-        Enumeration e = listeners.elements();
-        while (e.hasMoreElements() == true) {
-            BookEventListener l = (BookEventListener) e.nextElement();
-            l.actionPerformed(event);
-        }
-    }
-
-    public void setNewBook (String name)
-    {
-        this.book.clear();
-        this.book.put(name, new ArrayList<>());
-        this.paragraph = this.book.get(name);
-    }
-
-    public void clear ()
-    {
-        this.book.clear();
-    }
-
-    public void setNewParagraph (String name)
-    {
-        this.book.put(name + "\r\n", new ArrayList<>());
-        this.paragraph = this.book.get(name);
-    }
-
-    public void writeToCurrentParagraph (String line)
-    {
-        this.paragraph.add(line + "\r\n");
-    }
-
-    public void writeToExistingParagraph (String name, String line)
-    {
-        ArrayList<String> par = this.book.get(name);
-        if (par != null) {
-            par.add(line + "\r\n");
-        } else {
-            par = new ArrayList<>();
-            par.add(line + "\r\n");
-            this.book.put(name, par);
-        }
-    }
-
-
-
-
-    public void writeToLog ()
-    {
-        if (this.exist == false) {
-            return;
-        }
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(this.logFile, false);
-        } catch (IOException exception) {
-            fireEvents("When 'new FileWriter(...)'");
-            return;
-        }
-        if (writer == null) {
-            return;
-        }
-        String name = "";
-        ArrayList<String> paragraph;
-        Iterator<String> keyIterator = this.book.keySet().iterator();
-        while (keyIterator.hasNext() == true) {
-            name = keyIterator.next();
-            paragraph = this.book.get(name);
-            if (paragraph == null) {
-                continue;
-            }
+        text.add(line);
+        linesCount++;
+        if (linesCount >= linesLimit) {
+            File file = null;
+            FileWriter writer = null;
+            String p = root + File.separator + Long.toString(System.currentTimeMillis()) + "." + this.name;
+            file = new File(p);
             try {
-                writer.append("\r\n" + name + "\r\n");
+                file.createNewFile();
             } catch (IOException exception) {
-                fireEvents("When 'FileWriter.append(...)'");
                 return;
             }
-            for (String line : paragraph) {
+            try {
                 try {
-                    writer.append(line);
+                    writer = new FileWriter(file, true);
+                    while (text.isEmpty() == false) {
+                        try {
+                            writer.write("\r\n"  + text.remove(0) + " \r\n");
+                        } catch (IOException exception) {
+                            return;
+                        }
+                    }
+                    writer.close();
                 } catch (IOException exception) {
-                    fireEvents("When 'FileWriter.append(...)'");
                     return;
                 }
+            } catch (NullPointerException exception) {
+                return;
             }
+            linesCount = 0;
+            index.add(Paths.get(p));
         }
-        try {
-            writer.close();
-        } catch (IOException exception) {
-            fireEvents("When 'FileWriter.close()'");
-            return;
-        }
-        fireEvents("Write to " + this.name + " - done !");
     }
 
-    public Stream<String> readLineByLine ()
+    public void finish ()
     {
-        Stream<String> output = null;
-        if (this.logFile == null) {
-            return output;
+        File file = null;
+        FileWriter writer = null;
+        String p = root + File.separator + Long.toString(System.currentTimeMillis()) + "." + this.name;
+        if (linesCount > 0) {
+            file = new File(p);
+            index.add(Paths.get(p));
+            try {
+                file.createNewFile();
+            } catch (IOException exception) {
+                return;
+            }
+            try {
+                try {
+                    writer = new FileWriter(file, false);
+                    while (text.isEmpty() == false) {
+                        try {
+                            writer.append("\r\n" + text.remove(0) + " \r\n");
+                        } catch (IOException exception) {
+                            return;
+                        }
+                    }
+                    writer.close();
+                } catch (IOException exception) {
+                    return;
+                }
+            } catch (NullPointerException exception) {
+                return;
+            }
+            linesCount = 0;
         }
-        try {
-            output = Files.lines(this.logFile.toPath(), Charset.forName(this.charsetName));
-        } catch (IOException exception) {
-            fireEvents("When 'Files.lines(...)'");
-            return null;
-        }
-        return output;
     }
+
+    void cleanUp ()
+    {
+        for (Path p : index) {
+            try {
+                Files.deleteIfExists(p);
+            } catch (IOException exception) {
+
+            }
+        }
+        index.removeAll(index);
+        for (Book b : childs) {
+            b.cleanUp();
+        }
+    }
+    void cleanAll ()
+    {
+        for (Path p : index) {
+            try {
+                Files.deleteIfExists(p);
+            } catch (IOException exception) {
+
+            }
+        }
+        index.removeAll(index);
+        for (Book b : childs) {
+            b.cleanUp();
+            try {
+                Files.deleteIfExists(b.root);
+            } catch (IOException exception) {
+
+            }
+        }
+        childs.removeAll(childs);
+    }
+
+
+
+
+
+
+
 
     public void setCharsetName(String charsetName)
     {
         this.charsetName = charsetName;
     }
-
-    public void setNeedUpdate (boolean value)
+    public String getCharsetName ()
     {
-        this.needUpdate = value;
+        return this.charsetName;
+    }
+    public Charset getCharset ()
+    {
+        return Charset.forName(this.charsetName);
     }
 
-    public boolean isNeedUpdate()
+    public ArrayList<Path> getIndex()
     {
-        return needUpdate;
-    }
-
-    public boolean isExist()
-    {
-        return exist;
-    }
-
-    public boolean isParagraphExist (String name)
-    {
-        return this.book.containsKey(name);
+        return this.index;
     }
 }
