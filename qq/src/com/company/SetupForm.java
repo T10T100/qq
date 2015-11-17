@@ -240,7 +240,7 @@ public class SetupForm extends JFrame {
             this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
         }
 
-        String wp = file.toPath().toString() + File.separator + "KAPITON_CHUCHELO";
+        String wp = file.toPath().toString() + File.separator + "PWx_SITC";
         workingRoot = Paths.get(wp);
         file = new File(wp);
         if (file.exists() == false) {
@@ -257,12 +257,6 @@ public class SetupForm extends JFrame {
         logObject.setCharsetName("ISO-8859-1");
         hashObject.setCharsetName("ISO-8859-1");
 
-        pathWatcher.addEventListener(new PathWatcherListener() {
-            @Override
-            public void actionPerformed(PathWatcherEvent event) {
-                statusLabel.setText(event.getStatus().toString());
-            }
-        });
 
     }
 
@@ -426,7 +420,7 @@ public class SetupForm extends JFrame {
                     pathWatcher.makeHash(tree1, hashObject);
                     hashReady = true;
                 }
-                pathWatcher.watchHash(pathComparator, makeLog, logObject, hashObject);
+                pathWatcher.watchHash(pathComparator, logObject, hashObject);
 
                 setCursor(Cursor.getDefaultCursor());
                 printWithHighlight(pathComparator.getTextItems(), outputTextArea);

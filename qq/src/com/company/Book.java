@@ -119,6 +119,40 @@ public class Book {
         }
     }
 
+    public void finish (String name)
+    {
+        File file = null;
+        FileWriter writer = null;
+        String p = root + File.separator + name + "." + this.name;
+        if (linesCount > 0) {
+            file = new File(p);
+            index.add(Paths.get(p));
+            try {
+                file.createNewFile();
+            } catch (IOException exception) {
+                return;
+            }
+            try {
+                try {
+                    writer = new FileWriter(file, false);
+                    while (text.isEmpty() == false) {
+                        try {
+                            writer.append("\r\n" + text.remove(0) + " \r\n");
+                        } catch (IOException exception) {
+                            return;
+                        }
+                    }
+                    writer.close();
+                } catch (IOException exception) {
+                    return;
+                }
+            } catch (NullPointerException exception) {
+                return;
+            }
+            linesCount = 0;
+        }
+    }
+
     void cleanUp ()
     {
         for (Path p : index) {

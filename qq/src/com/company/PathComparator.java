@@ -70,32 +70,6 @@ public class PathComparator {
         return true;
     }
 
-    public String compareAndLog (String name, long size)
-    {
-        String log = "";
-        int matched = 0;
-        this.watched++;
-        this.totalSize += size;
-        boolean all = true;
-        for (PathKey key : keys) {
-            if (key.compare(name, size) == true) {
-                log += " [" + key.getKey().getName() + "] ";
-                matched++;
-            } else {
-                all = false;
-            }
-        }
-        if (all == true) {
-            return "[ALL]";
-        }
-        return "(" + Integer.toString(matched) + ")" + log;
-    }
-
-    public String getSystemInfo ()
-    {
-        return "???";
-    }
-
     public ArrayList<textBoundedItem> getTextItems ()
     {
         ArrayList<textBoundedItem> items = new ArrayList<>();
@@ -110,64 +84,51 @@ public class PathComparator {
         return items;
     }
 
-    @Override
-    public String toString()
+    public void log (Book log)
     {
+        log.cleanUp();
 
-        String output = "Watch time : " + this.printTime(this.timeEnd - this.timeStart) + "\n";
-        output += "Watched : \"" + Long.toString(this.watched) + "\" Paths\n" +
-                  "Total Size : " + this.printSize(this.totalSize) + "\n\n";
+        log.write("Watch time : " + this.printTime(this.timeEnd - this.timeStart) + "\n");
+        log.write("Watched : \"" + Long.toString(this.watched) + "\" Paths\n");
+        log.write("Total Size : " + this.printSize(this.totalSize) + "\n\n");
         for (PathKey key : keys) {
-            output += key.toString();
+            log.write(key.toString());
         }
-        return output;
+
+        log.finish("PWLog");
     }
 
     private String printSize (long size)
     {
         char prefix = ' ';
         if (size > 2000000000) {
-            size /= 1000000000;
+            size /= 1073741823;
             prefix = 'G';
         } else if (size > 2000000) {
-            size /= 1000000;
+            size /= 1048575;
             prefix = 'M';
         } else if (size > 20000) {
-            size /= 1000;
+            size /= 1024;
             prefix = 'K';
         } else {
         }
         return Long.toString(size) + ' ' + prefix + "Bytes";
     }
 
-    public String printTime (long nanos)
+    public String printTime (long mills)
     {
-        nanos = Math.abs(nanos);
-        int seconds = (int)(nanos / 1000000000);
+        mills = Math.abs(mills);
+        int seconds = (int)(mills / 1000);
         int minutes = (seconds / 60) % 60;
         int hours = (minutes / 60) % 24;
         LocalTime time;
         try {
-            time = LocalTime.of(seconds, minutes, hours, 0);
+            time = LocalTime.of(seconds, minutes, hours, (int)mills);
             return time.toString();
         } catch (DateTimeException exception) {
             return "time exception!";
         }
 
-    }
-
-    public String printKeys ()
-    {
-        String output = "Keys (" + Integer.toString(keys.size()) + ") -> ";
-        for (PathKey key : keys) {
-            output += "[" + key.getKey().getName() + "]-";
-        }
-        return output;
-    }
-
-    public int getKeyCount ()
-    {
-        return keys.size();
     }
 
 }

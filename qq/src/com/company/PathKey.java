@@ -68,13 +68,13 @@ public class PathKey {
     {
         char prefix = ' ';
         if (size > 2000000000) {
-            size /= 1000000000;
+            size /= 1073741823;
             prefix = 'G';
         } else if (size > 2000000) {
-            size /= 1000000;
+            size /= 1048575;
             prefix = 'M';
         } else if (size > 20000) {
-            size /= 1000;
+            size /= 1024;
             prefix = 'K';
         } else {
         }
@@ -94,11 +94,11 @@ public class PathKey {
     public String toString()
     {
         String output = new String (this.key.toString() +
-                "\nMatched : \"" +
+                "\r\nMatched : \"" +
                 Integer.toString(this.matched) +
-                "\" Paths\nSize of matched : " +
+                "\" Paths\r\nSize of matched : " +
                 this.printSize(this.matchedSize) +
-                "\n\n");
+                "\r\n\n");
         return output;
     }
 
@@ -107,11 +107,9 @@ public class PathKey {
         return matched;
     }
 
-
     public int getMatchedToArgs() {
         return matchedToArgs;
     }
-
 
     public void setKey(Word key) {
         this.key = key;
@@ -128,6 +126,5 @@ public class PathKey {
     public void setMatchedToArgs(int matchedToArgs) {
         this.matchedToArgs = matchedToArgs;
     }
-
 
 }
