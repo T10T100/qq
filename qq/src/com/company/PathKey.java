@@ -86,7 +86,7 @@ public class PathKey {
         ArrayList<textBoundedItem> items = new ArrayList<>();
         items.add(new textBoundedItem(this.key.toString(), new Color(38, 17, 117, 100)));
         items.add(new textBoundedItem("Matched :         " + Integer.toString(this.matched) + " Paths"));
-        items.add(new textBoundedItem("Size of matched : " + this.printSize(this.matchedSize) + '\n', new Color(124, 130, 30, 150)));
+        items.add(new textBoundedItem("Size of matched : " + this.printSize(this.matchedSize) + '\n', new Color(224, 130, 30, 150)));
         return items;
     }
 

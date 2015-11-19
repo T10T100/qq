@@ -24,26 +24,28 @@ public class PathWatcher {
     private PathIconsManager icons;
     private Vector<PathWatcherEventListener> listenersMake;
     private Vector<PathWatcherEventListener> listenersWatch;
+    private Vector<PathWatcherEventListener> listenersIntermediateMake;
+    private long pathsTotal;
+    private long pathsCount;
 
     private boolean hashReady;
     private Book hash;
+    private Book log;
     private JTree tree;
+    private PathComparator comparator;
 
     private class HashThread extends Thread {
 
         @Override
         public void run() {
             super.run();
-            System.out.println("++");
             DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
             PathTreeNode root = (PathTreeNode) model.getRoot();
             Path p;
             hash.cleanUp();
             PathTreeNode node;
             int childCount = root.getChildCount();
-            System.out.println("++");
             for (int i = 0; i < childCount; i++) {
-                System.out.println("++");
                 synchronized (tree) {
                     node = ((PathTreeNode) root.getChildAt(i));
                 }
@@ -56,12 +58,45 @@ public class PathWatcher {
                         }
                     }
                 }
-                System.out.println("++");
             }
             tree.repaint();
             hash.finish();
             hashReady = true;
             fireMakeEvents();
+        }
+    }
+
+    private class HashWatchThread extends Thread {
+        @Override
+        public void run() {
+            super.run();
+            pathsCount = 0;
+            Word word = new Word();
+            comparator.resetAll();
+            ArrayList<Path> paths = hash.getIndex();
+            Stream<String> output = null;
+            comparator.resetAll();
+            comparator.setTimeStart(System.currentTimeMillis());
+            int fireAt = 0;
+            for (Path path : paths) {
+                fireIntermediateMakeEvents();
+                try {
+                    output = Files.lines(path, hash.getCharset());
+                } catch (IOException exception) {
+                    continue;
+                }
+                try {
+                    output.forEach(line -> look(word, line, comparator, fireAt));
+                } catch (UncheckedIOException exception) {
+                    continue;
+                }
+                if (output != null) {
+                    output.close();
+                }
+            }
+            comparator.setTimeEnd(System.currentTimeMillis());
+            comparator.log(log);
+            fireWatchEvents();
         }
     }
 
@@ -73,6 +108,8 @@ public class PathWatcher {
         dateFormat = new SimpleDateFormat("YYYY:MM:dd : HH:mm:ss");
         hashThread  = new HashThread();
         hashReady = false;
+        pathsTotal = 0;
+        pathsCount = 0;
     }
 
     public void addMakeListener (PathWatcherEventListener l)
@@ -145,6 +182,41 @@ public class PathWatcher {
         }
     }
 
+
+    public void addIntermediateMakeListener (PathWatcherEventListener l)
+    {
+        if (listenersIntermediateMake == null) {
+            listenersIntermediateMake = new Vector<>();
+        }
+        if (listenersIntermediateMake.contains(l) == false) {
+            listenersIntermediateMake.add(l);
+        }
+    }
+
+    public void removeIntermediateMakeListener (PathWatcherEventListener l)
+    {
+        listenersIntermediateMake.remove(l);
+    }
+
+    public void removeAllIntermediateMakeListeners ()
+    {
+        listenersIntermediateMake.removeAll(listenersMake);
+    }
+
+    private void fireIntermediateMakeEvents ()
+    {
+        if (listenersIntermediateMake == null || listenersMake.isEmpty() == true) {
+            return;
+        }
+        Vector<PathWatcherEventListener> v;
+        synchronized (this) {
+            v = (Vector) listenersIntermediateMake.clone();
+        }
+        PathWatcherEvent e = new PathWatcherEvent(this);
+        for (PathWatcherEventListener l : v) {
+            l.eventPerformed(e);
+        }
+    }
 
     private PathTreeNode insertBranchByPath (PathTreeNode rootNode, Path path)
     {
@@ -275,10 +347,12 @@ public class PathWatcher {
                 for (Path child : stream) {
                     unwindPath(child, hash);
                 }
+                fireIntermediateMakeEvents();
             } catch (IOException exception) {
 
             }
         } else {
+            pathsTotal++;
             hash.write(this.print(new File(path.toString())));
         }
     }
@@ -288,51 +362,33 @@ public class PathWatcher {
         if (hashReady == false) {
             this.hash = hashFile;
             this.tree = tree;
+            pathsTotal = 0;
+            pathsCount = 0;
             (new HashThread()).start();
         } else {
             this.watchHash(comparator, log, hashFile);
         }
     }
 
-    private void watchHash (PathComparator comparator, Book log, Book hashFile)
+    public void watchHash (PathComparator comparator, Book log, Book hashFile)
     {
-        if (this.hashReady == false) {
-            return;
-        }
-        Word word = new Word();
-        comparator.resetAll();
-        ArrayList<Path> paths = hashFile.getIndex();
-        Stream<String> output = null;
-        comparator.resetAll();
-        comparator.setTimeStart(System.currentTimeMillis());
-        for (Path path : paths) {
-            try {
-                output = Files.lines(path, hashFile.getCharset());
-            } catch (IOException exception) {
-                continue;
-            }
-            try {
-                output.forEach(line -> this.look(word, line, comparator));
-            } catch (UncheckedIOException exception) {
-                continue;
-            }
-            if (output != null) {
-                output.close();
-            }
-        }
-        comparator.setTimeEnd(System.currentTimeMillis());
-        comparator.log(log);
-        fireWatchEvents();
-
+        this.comparator = comparator;
+        this.log = log;
+        this.hash = hash;
+        (new HashWatchThread()).start();
     }
 
-    private void look (Word word, String line, PathComparator comparator)
+    private void look (Word word, String line, PathComparator comparator, int fireAt)
     {
         word.setValue(line);
         ArrayList<String> attributes;
         attributes = word.getArrayFromValue('<', '>');
         if (attributes.size() >= 2) {
             comparator.compareAndCollect(attributes.get(1), Long.parseLong(attributes.get(2)));
+            pathsCount++;
+        }
+        if (fireAt++ % 1000 == 0) {
+            fireIntermediateMakeEvents();
         }
     }
 
@@ -355,5 +411,19 @@ public class PathWatcher {
     public void setHashReady(boolean hashReady)
     {
         this.hashReady = hashReady;
+    }
+
+    public boolean isHashReady ()
+    {
+        return hashReady;
+    }
+
+    public long getPathsCount ()
+    {
+        return pathsCount;
+    }
+    public long getPathsTotal ()
+    {
+        return pathsTotal;
     }
 }

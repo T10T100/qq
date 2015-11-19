@@ -32,7 +32,7 @@ public class SetupForm extends JFrame {
     private JCheckBox expandMode;
     private JTextField searchField;
     private JComboBox charsetChooser;
-    private JLabel statusLabel;
+    private JProgressBar progressBarOfWatch;
 
     private JFileChooser saveOutputAsDialog;
 
@@ -44,6 +44,7 @@ public class SetupForm extends JFrame {
 
     private KeyParser keyParser;
 
+    private int pathsCounter;
 
     private Book logObject;
     Book hashObject;
@@ -229,7 +230,6 @@ public class SetupForm extends JFrame {
 
     private void startUp() {
         int directorySelect = 0;
-        statusLabel.setBackground(Color.pink);
         saveOutputAsDialog = new JFileChooser("Please select working directory : ");
         saveOutputAsDialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         directorySelect = saveOutputAsDialog.showOpenDialog(SetupForm.this);
@@ -275,7 +275,7 @@ public class SetupForm extends JFrame {
         icons.setFileIcon("file.jpg");
         icons.setChekedIcon("cheked.jpg");
         icons.setUnchekedIcon("uncheked.jpg");
-        icons.setRootIcon("root.jpg");
+        icons.setRootIcon("root.jpeg");
         keyParser = new KeyParser();
         pathWatcher = new PathWatcher(icons);
         cellTreeRenderer = new PathTreeCellRenderer(tree1, false);
@@ -290,7 +290,6 @@ public class SetupForm extends JFrame {
         tree1.setModel(new DefaultTreeModel(pathWatcher.makeTreeByName("")));
         tree1.setCellRenderer(cellTreeRenderer);
         tree1.setBackground(Color.WHITE);
-
 
         pathComparator = new PathComparator();
 
@@ -417,9 +416,15 @@ public class SetupForm extends JFrame {
             /**Watch there**/
             @Override
             public void actionPerformed(ActionEvent e) {
-                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                stepButton.setEnabled(false);
-
+                disableWatchBlock();
+                pathsCounter = 0;
+                if (pathWatcher.isHashReady() == true) {
+                    progressBarOfWatch.setIndeterminate(false);
+                    progressBarOfWatch.setMaximum((int)pathWatcher.getPathsTotal());
+                    progressBarOfWatch.setMinimum(0);
+                } else {
+                    progressBarOfWatch.setIndeterminate(true);
+                }
                 pathComparator.resetAll();
                 pathWatcher.makeHash(tree1, pathComparator, logObject, hashObject);
 
@@ -429,7 +434,8 @@ public class SetupForm extends JFrame {
 
     private void initOthers ()
     {
-
+        progressBarOfWatch.setMinimum(0);
+        progressBarOfWatch.setMaximum(100);
         keyTexArea.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -522,6 +528,11 @@ public class SetupForm extends JFrame {
         pathWatcher.addMakeListener(new PathWatcherEventListener() {
             @Override
             public void eventPerformed(PathWatcherEvent e) {
+                progressBarOfWatch.setIndeterminate(false);
+                progressBarOfWatch.setValue(0);
+                progressBarOfWatch.setMinimum(0);
+                progressBarOfWatch.setMaximum((int)pathWatcher.getPathsTotal());
+                pathsCounter = 0;
                 pathWatcher.watchHash(pathComparator, logObject, hashObject);
             }
         });
@@ -529,8 +540,18 @@ public class SetupForm extends JFrame {
             @Override
             public void eventPerformed(PathWatcherEvent e) {
                 printWithHighlight(pathComparator.getTextItems(), outputTextArea);
-                setCursor(Cursor.getDefaultCursor());
-                stepButton.setEnabled(true);
+                enableWatchBlock();
+            }
+        });
+        pathWatcher.addIntermediateMakeListener(new PathWatcherEventListener() {
+            @Override
+            public void eventPerformed(PathWatcherEvent e) {
+                if (((PathWatcher)e.getSource()).isHashReady() == true) {
+                    progressBarOfWatch.setValue((int)pathWatcher.getPathsCount());
+
+                } else {
+
+                }
             }
         });
 
@@ -538,6 +559,25 @@ public class SetupForm extends JFrame {
         for (String chset : charsets) {
             charsetChooser.addItem(chset);
         }
+    }
+
+    private void enableWatchBlock ()
+    {
+        progressBarOfWatch.setValue(0);
+        setCursor(Cursor.getDefaultCursor());
+        stepButton.setEnabled(true);
+        charsetChooser.setEnabled(true);
+        keyTexArea.setEnabled(true);
+        searchField.setEnabled(true);
+    }
+    private void disableWatchBlock ()
+    {
+        progressBarOfWatch.setValue(0);
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        stepButton.setEnabled(false);
+        charsetChooser.setEnabled(false);
+        keyTexArea.setEnabled(false);
+        searchField.setEnabled(false);
     }
 
 }
