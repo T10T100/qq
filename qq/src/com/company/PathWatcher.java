@@ -22,11 +22,127 @@ public class PathWatcher {
 
     private DateFormat dateFormat;
     private PathIconsManager icons;
+    private Vector<PathWatcherEventListener> listenersMake;
+    private Vector<PathWatcherEventListener> listenersWatch;
+
+    private boolean hashReady;
+    private Book hash;
+    private JTree tree;
+
+    private class HashThread extends Thread {
+
+        @Override
+        public void run() {
+            super.run();
+            System.out.println("++");
+            DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+            PathTreeNode root = (PathTreeNode) model.getRoot();
+            Path p;
+            hash.cleanUp();
+            PathTreeNode node;
+            int childCount = root.getChildCount();
+            System.out.println("++");
+            for (int i = 0; i < childCount; i++) {
+                System.out.println("++");
+                synchronized (tree) {
+                    node = ((PathTreeNode) root.getChildAt(i));
+                }
+                node.setIcon(icons.getChekedIcon());
+                p = Paths.get(node.toString());
+                synchronized (this) {
+                    if (Files.exists(p) == true) {
+                        synchronized (hash) {
+                            unwindPath(p, hash);
+                        }
+                    }
+                }
+                System.out.println("++");
+            }
+            tree.repaint();
+            hash.finish();
+            hashReady = true;
+            fireMakeEvents();
+        }
+    }
+
+    HashThread hashThread;
 
     public PathWatcher(PathIconsManager icons)
     {
         this.icons = icons;
         dateFormat = new SimpleDateFormat("YYYY:MM:dd : HH:mm:ss");
+        hashThread  = new HashThread();
+        hashReady = false;
+    }
+
+    public void addMakeListener (PathWatcherEventListener l)
+    {
+        if (listenersMake == null) {
+            listenersMake = new Vector<>();
+        }
+        if (listenersMake.contains(l) == false) {
+            listenersMake.add(l);
+        }
+    }
+
+    public void removeMakeListener (PathWatcherEventListener l)
+    {
+        listenersMake.remove(l);
+    }
+
+    public void removeAllMakeListeners ()
+    {
+        listenersMake.removeAll(listenersMake);
+    }
+
+    private void fireMakeEvents ()
+    {
+        if (listenersMake == null || listenersMake.isEmpty() == true) {
+            return;
+        }
+        Vector<PathWatcherEventListener> v;
+        synchronized (this) {
+            v = (Vector) listenersMake.clone();
+        }
+        PathWatcherEvent e = new PathWatcherEvent(this);
+        for (PathWatcherEventListener l : v) {
+            l.eventPerformed(e);
+        }
+    }
+
+    public void addWatchListener (PathWatcherEventListener l)
+    {
+        if (listenersWatch == null) {
+            listenersWatch = new Vector<>();
+        }
+        if (listenersMake.contains(l) == false) {
+            listenersWatch.add(l);
+        }
+    }
+
+    public void removeWatchListener (PathWatcherEventListener l)
+    {
+        listenersWatch.remove(l);
+    }
+
+    public void removeAllWatchListeners ()
+    {
+        listenersWatch.removeAll(listenersMake);
+    }
+
+    private void fireWatchEvents ()
+    {
+        if (listenersWatch == null || listenersMake.isEmpty() == true) {
+            return;
+        }
+        Vector<PathWatcherEventListener> v;
+        synchronized (this) {
+            v = (Vector) listenersWatch.clone();
+        }
+        PathWatcherEvent e = new PathWatcherEvent(this);
+        for (PathWatcherEventListener l : v) {
+            l.eventPerformed(e);
+        }
     }
 
 
@@ -167,28 +283,22 @@ public class PathWatcher {
         }
     }
 
-    public void makeHash (JTree tree, Book hashFile)
+    public void makeHash (JTree tree, PathComparator comparator, Book log, Book hashFile)
     {
-        DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-        PathTreeNode root = (PathTreeNode) model.getRoot();
-        Path p;
-        hashFile.cleanUp();
-        PathTreeNode node;
-        int childCount = root.getChildCount();
-        for (int i = 0; i < childCount; i++) {
-            node = ((PathTreeNode)root.getChildAt(i));
-            node.setIcon(icons.getChekedIcon());
-            p = Paths.get(node.toString());
-            if (Files.exists(p) == true) {
-                unwindPath(p, hashFile);
-            }
+        if (hashReady == false) {
+            this.hash = hashFile;
+            this.tree = tree;
+            (new HashThread()).start();
+        } else {
+            this.watchHash(comparator, log, hashFile);
         }
-        tree.repaint();
-        hashFile.finish();
     }
 
-    public void watchHash (PathComparator comparator, Book log, Book hashFile)
+    private void watchHash (PathComparator comparator, Book log, Book hashFile)
     {
+        if (this.hashReady == false) {
+            return;
+        }
         Word word = new Word();
         comparator.resetAll();
         ArrayList<Path> paths = hashFile.getIndex();
@@ -212,6 +322,7 @@ public class PathWatcher {
         }
         comparator.setTimeEnd(System.currentTimeMillis());
         comparator.log(log);
+        fireWatchEvents();
 
     }
 
@@ -241,6 +352,8 @@ public class PathWatcher {
     }
 
 
-
-
+    public void setHashReady(boolean hashReady)
+    {
+        this.hashReady = hashReady;
+    }
 }

@@ -49,8 +49,6 @@ public class SetupForm extends JFrame {
     Book hashObject;
     private exelBook mkout;
     private Path workingRoot;
-    private boolean hashReady;
-    private boolean makeLog;
 
     private String[] hddRoots = {
             "A:/",
@@ -254,8 +252,6 @@ public class SetupForm extends JFrame {
 
         this.addWindowListener(new WindowEventListener());
 
-        hashReady = false;
-        makeLog = true;
         logObject.setCharsetName("ISO-8859-1");
         hashObject.setCharsetName("ISO-8859-1");
 
@@ -315,7 +311,7 @@ public class SetupForm extends JFrame {
                             PathTreeNode node = new PathTreeNode(nodeSelected);
                             node.setIcon(icons.getUnchekedIcon());
                             ((DefaultTreeModel) tree1.getModel()).insertNodeInto(node, (PathTreeNode) tree1.getModel().getRoot(), 0);
-                            hashReady = false;
+                            pathWatcher.setHashReady(false);
                         }
                     }
                 }
@@ -370,7 +366,7 @@ public class SetupForm extends JFrame {
                 if (e.getSource() == tree1) {
                     if (SwingUtilities.isRightMouseButton(e)) {
                         pathWatcher.removeSelected(tree1);
-                        hashReady = false;
+                        pathWatcher.setHashReady(false);
                     }
                 }
             }
@@ -421,17 +417,12 @@ public class SetupForm extends JFrame {
             /**Watch there**/
             @Override
             public void actionPerformed(ActionEvent e) {
-                pathComparator.resetAll();
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                stepButton.setEnabled(false);
 
-                if (hashReady == false) {
-                    pathWatcher.makeHash(tree1, hashObject);
-                    hashReady = true;
-                }
-                pathWatcher.watchHash(pathComparator, logObject, hashObject);
+                pathComparator.resetAll();
+                pathWatcher.makeHash(tree1, pathComparator, logObject, hashObject);
 
-                setCursor(Cursor.getDefaultCursor());
-                printWithHighlight(pathComparator.getTextItems(), outputTextArea);
             }
         });
     }
@@ -517,9 +508,6 @@ public class SetupForm extends JFrame {
                 }
             }
         });
-        for (String chset : charsets) {
-            charsetChooser.addItem(chset);
-        }
         charsetChooser.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -530,6 +518,26 @@ public class SetupForm extends JFrame {
                 }
             }
         });
+
+        pathWatcher.addMakeListener(new PathWatcherEventListener() {
+            @Override
+            public void eventPerformed(PathWatcherEvent e) {
+                pathWatcher.watchHash(pathComparator, logObject, hashObject);
+            }
+        });
+        pathWatcher.addWatchListener(new PathWatcherEventListener() {
+            @Override
+            public void eventPerformed(PathWatcherEvent e) {
+                printWithHighlight(pathComparator.getTextItems(), outputTextArea);
+                setCursor(Cursor.getDefaultCursor());
+                stepButton.setEnabled(true);
+            }
+        });
+
+
+        for (String chset : charsets) {
+            charsetChooser.addItem(chset);
+        }
     }
 
 }
