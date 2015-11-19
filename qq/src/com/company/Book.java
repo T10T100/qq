@@ -19,6 +19,7 @@ public class Book {
     private ArrayList<String> text;
     private ArrayList<Path> index;
     private ArrayList<Book> childs;
+    private ArrayList<exelBook> eChilds;
     private Path root;
     private final int linesLimit = 50000;
     private int linesCount;
@@ -30,12 +31,13 @@ public class Book {
         index = new ArrayList<>();
         text = new ArrayList<>();
         childs = new ArrayList<>();
+        eChilds = new ArrayList<>();
         this.name = bookName;
         this.root = location.toPath();
         this.linesCount = 0;
     }
 
-    public Book newFromThis (String bookName)
+    public Book newBookWithin (String bookName)
     {
         File file = new File(root + File.separator + "LOG");
         if (file.exists() == false) {
@@ -45,8 +47,16 @@ public class Book {
         if (this.childs.contains(book) == false) {
             this.childs.add(book);
         }
-
         return book;
+    }
+
+    public exelBook newExelBookThere (String name)
+    {
+        exelBook eBook = new exelBook(this.root.toFile(), name);
+        if (this.eChilds.contains(eBook) == false) {
+            this.eChilds.add(eBook);
+        }
+        return eBook;
     }
 
     public void write (String line)

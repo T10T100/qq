@@ -94,14 +94,6 @@
           <toolTipText value="Select the charset, for read/write log/hash files"/>
         </properties>
       </component>
-      <component id="d1b6e" class="javax.swing.JCheckBox" binding="logOutEnable">
-        <constraints>
-          <grid row="2" column="9" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Make log"/>
-        </properties>
-      </component>
       <component id="313f7" class="javax.swing.JLabel" binding="labelToCompare">
         <constraints>
           <grid row="3" column="9" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>

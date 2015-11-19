@@ -31,13 +31,13 @@ public class SetupForm extends JFrame {
     private JTree tree1;
     private JCheckBox expandMode;
     private JTextField searchField;
-    private JCheckBox logOutEnable;
     private JComboBox charsetChooser;
     private JLabel statusLabel;
 
     private JFileChooser saveOutputAsDialog;
 
 
+    private PathIconsManager icons;
     private PathTreeCellRenderer cellTreeRenderer;
     private PathWatcher pathWatcher;
     private PathComparator pathComparator;
@@ -45,8 +45,9 @@ public class SetupForm extends JFrame {
     private KeyParser keyParser;
 
 
-    Book logObject;
+    private Book logObject;
     Book hashObject;
+    private exelBook mkout;
     private Path workingRoot;
     private boolean hashReady;
     private boolean makeLog;
@@ -248,7 +249,8 @@ public class SetupForm extends JFrame {
         }
 
         hashObject = new Book(file, "pwh");
-        logObject = hashObject.newFromThis("txt");
+        logObject = hashObject.newBookWithin("txt");
+        //mkout = logObject.newExelBookThere("Exel");
 
         this.addWindowListener(new WindowEventListener());
 
@@ -272,11 +274,15 @@ public class SetupForm extends JFrame {
         highlightColors.add(new Color(38, 17, 117, 100));
         highlightColorsIterator = highlightColors.iterator();
 
+        icons = new PathIconsManager();
+        icons.setFolderIcon("folder.jpg");
+        icons.setFileIcon("file.jpg");
+        icons.setChekedIcon("cheked.jpg");
+        icons.setUnchekedIcon("uncheked.jpg");
+        icons.setRootIcon("root.jpg");
         keyParser = new KeyParser();
-        pathWatcher = new PathWatcher();
+        pathWatcher = new PathWatcher(icons);
         cellTreeRenderer = new PathTreeCellRenderer(tree1, false);
-
-        logOutEnable.setSelected(true);
         outputTextArea.setEditable(false);
         keyTexArea.setText("$");
 
@@ -306,7 +312,9 @@ public class SetupForm extends JFrame {
 
                             }
                         } else if (SwingUtilities.isRightMouseButton(e) == true) {
-                            ((DefaultTreeModel) tree1.getModel()).insertNodeInto(nodeSelected, (PathTreeNode) tree1.getModel().getRoot(), 0);
+                            PathTreeNode node = new PathTreeNode(nodeSelected);
+                            node.setIcon(icons.getUnchekedIcon());
+                            ((DefaultTreeModel) tree1.getModel()).insertNodeInto(node, (PathTreeNode) tree1.getModel().getRoot(), 0);
                             hashReady = false;
                         }
                     }
@@ -506,14 +514,6 @@ public class SetupForm extends JFrame {
                 super.mouseEntered(e);
                 if (e.getSource() == searchField) {
                     setCursor(Cursor.getDefaultCursor());
-                }
-            }
-        });
-        logOutEnable.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == logOutEnable) {
-                    makeLog = logOutEnable.isSelected();
                 }
             }
         });

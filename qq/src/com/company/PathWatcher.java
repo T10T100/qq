@@ -20,20 +20,28 @@ import java.util.stream.Stream;
 
 public class PathWatcher {
 
-    DateFormat dateFormat;
+    private DateFormat dateFormat;
+    private PathIconsManager icons;
 
-
-    public PathWatcher()
+    public PathWatcher(PathIconsManager icons)
     {
+        this.icons = icons;
         dateFormat = new SimpleDateFormat("YYYY:MM:dd : HH:mm:ss");
     }
 
 
     private PathTreeNode insertBranchByPath (PathTreeNode rootNode, Path path)
     {
+        PathTreeNode node;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
             for (Path child : stream) {
-                rootNode.add(new PathTreeNode(child));
+                node = new PathTreeNode(child);
+                if (Files.isDirectory(child) == true) {
+                    node.setIcon(icons.getFolderIcon());
+                } else {
+                    node.setIcon(icons.getFileIcon());
+                }
+                rootNode.add(node);
             }
         }
         catch (IOException e){
@@ -67,6 +75,7 @@ public class PathWatcher {
     {
         Path path = Paths.get(way);
         PathTreeNode root = new PathTreeNode(Paths.get("A:/"));
+        root.setIcon(icons.getRootIcon());
         if (Files.exists(path) == false)
         {
             return root;
@@ -82,6 +91,7 @@ public class PathWatcher {
     public PathTreeNode makeTreeByName (String... paths)
     {
         PathTreeNode root = new PathTreeNode(Paths.get("A:/"));
+        root.setIcon(icons.getRootIcon());
         Path path;
         for (String s : paths) {
             path = Paths.get(s);
@@ -96,24 +106,34 @@ public class PathWatcher {
     {
         DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
         Object obj = null;
-        if (root.isLeaf() == false) {
-            return root;
+        try {
+            if (root.isLeaf() == false) {
+                return root;
+            }
+        } catch (NullPointerException e) {
+            return null;
         }
         try {
            obj  = root.getUserObject();
         } catch (NullPointerException exception) {
-
             return root;
         }
         Path path = Paths.get(obj.toString());
 
         File file = null;
+        PathTreeNode node;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
             for (Path child : stream) {
                 try {
                     file = child.toFile();
                     if (file.exists() == true) {
-                        model.insertNodeInto(new PathTreeNode(child), root, 0);
+                        node = new PathTreeNode(child);
+                        if (file.isDirectory() == true) {
+                            node.setIcon(icons.getFolderIcon());
+                        } else {
+                            node.setIcon(icons.getFileIcon());
+                        }
+                        model.insertNodeInto(node, root, 0);
                     }
                 } catch (NullPointerException exception) {
 
@@ -143,7 +163,7 @@ public class PathWatcher {
 
             }
         } else {
-            hash.write(this.print(new File(path.toString()), dateFormat));
+            hash.write(this.print(new File(path.toString())));
         }
     }
 
@@ -153,13 +173,17 @@ public class PathWatcher {
         PathTreeNode root = (PathTreeNode) model.getRoot();
         Path p;
         hashFile.cleanUp();
+        PathTreeNode node;
         int childCount = root.getChildCount();
         for (int i = 0; i < childCount; i++) {
-            p = Paths.get(root.getChildAt(i).toString());
+            node = ((PathTreeNode)root.getChildAt(i));
+            node.setIcon(icons.getChekedIcon());
+            p = Paths.get(node.toString());
             if (Files.exists(p) == true) {
                 unwindPath(p, hashFile);
             }
         }
+        tree.repaint();
         hashFile.finish();
     }
 
@@ -209,6 +233,11 @@ public class PathWatcher {
         return  "<" + file.getName() + ">"+
                 "<" + file.length() + "><" +
                 format.format(new Date(file.lastModified())) + ">";
+    }
+    private String print (File file)
+    {
+        return  "<" + file.getName() + ">"+
+                "<" + file.length() + ">";
     }
 
 

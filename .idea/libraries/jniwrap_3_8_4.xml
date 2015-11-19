@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="jniwrap-3.8.4">
+    <CLASSES>
+      <root url="jar://C:/Program Files/Java/jexcel-1.7-windows-32_64-bit/lib/jniwrap-3.8.4.jar!/" />
+      <root url="jar://C:/Program Files/Java/jexcel-1.7-windows-32_64-bit/lib/slf4j-api-1.5.8.jar!/" />
+      <root url="jar://C:/Program Files/Java/jexcel-1.7-windows-32_64-bit/lib/slf4j-simple-1.5.8.jar!/" />
+      <root url="jar://C:/Program Files/Java/jexcel-1.7-windows-32_64-bit/lib/winpack-3.8.4.jar!/" />
+      <root url="jar://C:/Program Files/Java/jexcel-1.7-windows-32_64-bit/lib/comfyj-2.10.jar!/" />
+      <root url="jar://C:/Program Files/Java/jexcel-1.7-windows-32_64-bit/lib/jexcel-1.7.jar!/" />
+      <root url="jar://C:/Program Files/Java/jexcel-1.7-windows-32_64-bit/lib/jexcel-1.7-full.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

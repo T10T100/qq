@@ -17,7 +17,7 @@ public class PathTreeNode extends DefaultMutableTreeNode {
 
 
     public PathTreeNode(Object o) {
-        super(o);
+        super(o, true);
     }
 
     public PathTreeNode(Object o, ImageIcon icon) {

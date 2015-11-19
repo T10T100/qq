@@ -66,23 +66,16 @@ public class PathTreeCellRenderer extends DefaultTreeCellRenderer {
         if (highlight == true) {
             comp.setBackground(Color.PINK);
         } else {
-            if (node.getMatch() == true) {
-                comp.setBackground(Color.GRAY);
-            } else {
-                comp.setBackground(tree.getBackground());
-            }
+            comp.setBackground(tree.getBackground());
         }
-        /*
-        if (!leaf) {
-            if (node.getIcon() != null) {
-                setClosedIcon(node.getIcon());
-                setOpenIcon(node.getIcon());
-            } else {
-                setClosedIcon(getDefaultClosedIcon());
-                setOpenIcon(getDefaultClosedIcon());
-            }
+        //setIcon(node.getIcon());
+        Icon ico = getIcon();
+        if (node.getIcon() != null) {
+            setIcon(node.getIcon());
+        } else {
+            setIcon(ico);
         }
-        */
+
         return comp;
     }
 
