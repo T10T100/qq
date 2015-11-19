@@ -33,12 +33,14 @@ public class PathWatcher {
     private Book log;
     private JTree tree;
     private PathComparator comparator;
+    private boolean breaker;
 
     private class HashThread extends Thread {
 
         @Override
         public void run() {
             super.run();
+            breaker = false;
             DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
             PathTreeNode root = (PathTreeNode) model.getRoot();
             Path p;
@@ -227,7 +229,7 @@ public class PathWatcher {
                 if (Files.isDirectory(child) == true) {
                     node.setIcon(icons.getFolderIcon());
                 } else {
-                    node.setIcon(icons.getFileIcon());
+                    node.setIcon(icons.getTypeIcon(child.toFile()));
                 }
                 rootNode.add(node);
             }
@@ -310,6 +312,7 @@ public class PathWatcher {
 
         File file = null;
         PathTreeNode node;
+
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
             for (Path child : stream) {
                 try {
@@ -319,7 +322,7 @@ public class PathWatcher {
                         if (file.isDirectory() == true) {
                             node.setIcon(icons.getFolderIcon());
                         } else {
-                            node.setIcon(icons.getFileIcon());
+                            node.setIcon(icons.getTypeIcon(file));
                         }
                         model.insertNodeInto(node, root, 0);
                     }
@@ -346,6 +349,9 @@ public class PathWatcher {
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
                 for (Path child : stream) {
                     unwindPath(child, hash);
+                    if (breaker == true) {
+                        break;
+                    }
                 }
                 fireIntermediateMakeEvents();
             } catch (IOException exception) {
@@ -425,5 +431,11 @@ public class PathWatcher {
     public long getPathsTotal ()
     {
         return pathsTotal;
+    }
+
+    public void setBreaker(boolean breaker)
+    {
+        this.breaker = breaker;
+        hashReady = false;
     }
 }

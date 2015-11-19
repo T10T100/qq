@@ -10,7 +10,9 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * Created by Operator on 27.10.2015.
@@ -31,14 +33,15 @@ public class PathIconsManager {
     private ImageIcon chekedIcon;
     private ImageIcon unchekedIcon;
     private ImageIcon rootIcon;
+    private Map<String, ImageIcon> typeIcons;
 
-    public PathIconsManager (String... paths)
+    public PathIconsManager ()
     {
         this.folderIcon = null;
         this.fileIcon = null;
         this.chekedIcon = null;
         this.unchekedIcon = null;
-
+        typeIcons = new HashMap<>();
     }
 
     private BufferedImage getImage (String location)
@@ -47,9 +50,29 @@ public class PathIconsManager {
         try {
             image = ImageIO.read(new File(location));
         } catch (IOException e) {
-            System.out.println("oooops");
+
         }
         return image;
+    }
+
+    public void addTypeIcon (String name, String location)
+    {
+        typeIcons.put(name, new ImageIcon(getImage(location)));
+    }
+
+    public ImageIcon getTypeIcon (String name)
+    {
+        if (typeIcons.containsKey(name) == false) {
+            return fileIcon;
+        }
+        return typeIcons.get(name);
+    }
+
+    public ImageIcon getTypeIcon (File file)
+    {
+        String name = file.getName();
+        name = name.substring(name.lastIndexOf(".") + 1);
+        return getTypeIcon(name);
     }
 
     public void setFolderIcon(String location)

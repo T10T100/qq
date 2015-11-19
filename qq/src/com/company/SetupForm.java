@@ -33,6 +33,7 @@ public class SetupForm extends JFrame {
     private JTextField searchField;
     private JComboBox charsetChooser;
     private JProgressBar progressBarOfWatch;
+    private JButton buttonToBreak;
 
     private JFileChooser saveOutputAsDialog;
 
@@ -276,6 +277,22 @@ public class SetupForm extends JFrame {
         icons.setChekedIcon("cheked.jpg");
         icons.setUnchekedIcon("uncheked.jpg");
         icons.setRootIcon("root.jpeg");
+
+        icons.addTypeIcon("jpg", "type_jpg.jpg");
+        icons.addTypeIcon("jpeg", "type_jpg.jpg");
+        icons.addTypeIcon("eps", "type_eps.jpg");
+        icons.addTypeIcon("mov", "type_mov.jpg");
+        icons.addTypeIcon("mp3", "type_mp3.jpg");
+        icons.addTypeIcon("pdf", "type_pdf.jpg");
+        icons.addTypeIcon("xls", "type_xls.jpg");
+        icons.addTypeIcon("zip", "type_zip.jpg");
+        icons.addTypeIcon("html", "type_html.jpg");
+        icons.addTypeIcon("css", "type_css.jpg");
+        icons.addTypeIcon("xls", "type_xls.jpg");
+        icons.addTypeIcon("doc", "type_doc.jpg");
+        icons.addTypeIcon("docx", "type_doc.jpg");
+
+
         keyParser = new KeyParser();
         pathWatcher = new PathWatcher(icons);
         cellTreeRenderer = new PathTreeCellRenderer(tree1, false);
@@ -430,6 +447,13 @@ public class SetupForm extends JFrame {
 
             }
         });
+        buttonToBreak.setEnabled(false);
+        buttonToBreak.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pathWatcher.setBreaker(true);
+            }
+        });
     }
 
     private void initOthers ()
@@ -569,6 +593,7 @@ public class SetupForm extends JFrame {
         charsetChooser.setEnabled(true);
         keyTexArea.setEnabled(true);
         searchField.setEnabled(true);
+        buttonToBreak.setEnabled(false);
     }
     private void disableWatchBlock ()
     {
@@ -578,6 +603,7 @@ public class SetupForm extends JFrame {
         charsetChooser.setEnabled(false);
         keyTexArea.setEnabled(false);
         searchField.setEnabled(false);
+        buttonToBreak.setEnabled(true);
     }
 
 }
