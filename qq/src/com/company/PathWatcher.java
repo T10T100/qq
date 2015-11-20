@@ -27,15 +27,20 @@ public class PathWatcher {
     private Vector<PathWatcherEventListener> listenersIntermediateMake;
     private long pathsTotal;
     private long pathsCount;
+    JProgressBar statusBar;
 
     private boolean hashReady;
-    private Book hash;
-    private Book log;
-    private JTree tree;
-    private PathComparator comparator;
     private boolean breaker;
 
     private class HashThread extends Thread {
+        private Book hash;
+        private JTree tree;
+
+        public HashThread (JTree tree, Book hash)
+        {
+            this.tree = tree;
+            this.hash = hash;
+        }
 
         @Override
         public void run() {
@@ -65,14 +70,32 @@ public class PathWatcher {
             hash.finish();
             hashReady = true;
             fireMakeEvents();
+
         }
     }
 
     private class HashWatchThread extends Thread {
+        private Book hash;
+        private  Book log;
+        private PathComparator comparator;
+
+        public HashWatchThread (PathComparator comparator, Book hash, Book log)
+        {
+            this.hash = hash;
+            this.log = log;
+            this.comparator = comparator;
+        }
+
         @Override
         public void run() {
             super.run();
+
             pathsCount = 0;
+            statusBar.setIndeterminate(false);
+            statusBar.setValue(0);
+            statusBar.setMinimum(0);
+            statusBar.setMaximum((int)pathsTotal);
+
             Word word = new Word();
             comparator.resetAll();
             ArrayList<Path> paths = hash.getIndex();
@@ -80,6 +103,7 @@ public class PathWatcher {
             comparator.resetAll();
             comparator.setTimeStart(System.currentTimeMillis());
             int fireAt = 0;
+
             for (Path path : paths) {
                 fireIntermediateMakeEvents();
                 try {
@@ -104,11 +128,11 @@ public class PathWatcher {
 
     HashThread hashThread;
 
-    public PathWatcher(PathIconsManager icons)
+    public PathWatcher(PathIconsManager icons, JProgressBar statusBar)
     {
         this.icons = icons;
         dateFormat = new SimpleDateFormat("YYYY:MM:dd : HH:mm:ss");
-        hashThread  = new HashThread();
+        this.statusBar = statusBar;
         hashReady = false;
         pathsTotal = 0;
         pathsCount = 0;
@@ -253,6 +277,13 @@ public class PathWatcher {
         } catch (NullPointerException exception) {
 
         }
+        PathTreeNode root = (PathTreeNode)model.getRoot();
+        if (root.getChildCount() == 0) {
+            root.setIcon(icons.getDeadIcon());
+        } else {
+            root.setIcon(icons.getRootIcon());
+        }
+        tree.repaint();
     }
 
     public void removeSelected (JTree tree)
@@ -342,6 +373,18 @@ public class PathWatcher {
         return insertBranchByRoot(tree, (PathTreeNode) tree.getLastSelectedPathComponent());
     }
 
+    public void dragFromselected (JTree destTree, JTree sourceTree)
+    {
+        PathTreeNode nodeSelected = new PathTreeNode((PathTreeNode) sourceTree.getLastSelectedPathComponent());
+        if (nodeSelected == null) {
+            return;
+        }
+        PathTreeNode node = new PathTreeNode(nodeSelected);
+        node.setIcon(icons.getUnchekedIcon());
+        ((PathTreeNode)destTree.getModel().getRoot()).setIcon(icons.getRootIcon());
+        ((DefaultTreeModel) destTree.getModel()).insertNodeInto(node, (PathTreeNode) destTree.getModel().getRoot(), 0);
+        setHashReady(false);
+    }
 
     private void unwindPath (Path path, Book hash)
     {
@@ -365,23 +408,25 @@ public class PathWatcher {
 
     public void makeHash (JTree tree, PathComparator comparator, Book log, Book hashFile)
     {
+
+        comparator.resetAll();
         if (hashReady == false) {
-            this.hash = hashFile;
-            this.tree = tree;
+            statusBar.setIndeterminate(true);
             pathsTotal = 0;
             pathsCount = 0;
-            (new HashThread()).start();
+            (new HashThread(tree, hashFile)).start();
         } else {
+            statusBar.setIndeterminate(false);
+            statusBar.setMaximum((int)pathsTotal);
+            statusBar.setMinimum(0);
             this.watchHash(comparator, log, hashFile);
         }
     }
 
     public void watchHash (PathComparator comparator, Book log, Book hashFile)
     {
-        this.comparator = comparator;
-        this.log = log;
-        this.hash = hash;
-        (new HashWatchThread()).start();
+
+        (new HashWatchThread(comparator, hashFile, log)).start();
     }
 
     private void look (Word word, String line, PathComparator comparator, int fireAt)
@@ -424,18 +469,14 @@ public class PathWatcher {
         return hashReady;
     }
 
-    public long getPathsCount ()
-    {
-        return pathsCount;
-    }
-    public long getPathsTotal ()
-    {
-        return pathsTotal;
-    }
-
     public void setBreaker(boolean breaker)
     {
         this.breaker = breaker;
         hashReady = false;
+    }
+
+    public long getPathsCount ()
+    {
+        return this.pathsCount;
     }
 }

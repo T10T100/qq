@@ -45,7 +45,6 @@ public class SetupForm extends JFrame {
 
     private KeyParser keyParser;
 
-    private int pathsCounter;
 
     private Book logObject;
     Book hashObject;
@@ -279,6 +278,7 @@ public class SetupForm extends JFrame {
         icons.setRootIcon("root.jpeg");
         icons.setCloseIcon("needOpen.jpg");
         icons.setOpenIcon("needClose.jpg");
+        icons.setDeadIcon("deadRoot.jpg");
 
         /*
         icons.addTypeIcon("jpg", "type_jpg.jpg");
@@ -299,7 +299,7 @@ public class SetupForm extends JFrame {
 
 
         keyParser = new KeyParser();
-        pathWatcher = new PathWatcher(icons);
+        pathWatcher = new PathWatcher(icons, progressBarOfWatch);
         cellTreeRenderer = new PathTreeCellRenderer(tree1, false, icons);
         outputTextArea.setEditable(false);
         keyTexArea.setText("$");
@@ -322,18 +322,12 @@ public class SetupForm extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getSource() == treeToPick) {
-                    PathTreeNode nodeSelected = new PathTreeNode((PathTreeNode) treeToPick.getLastSelectedPathComponent());
-                    if (nodeSelected != null) {
-                        if (SwingUtilities.isLeftMouseButton(e) == true) {
-                            if (e.getClickCount() >= 2) {
+                    if (SwingUtilities.isLeftMouseButton(e) == true) {
+                        if (e.getClickCount() >= 2) {
 
-                            }
-                        } else if (SwingUtilities.isRightMouseButton(e) == true) {
-                            PathTreeNode node = new PathTreeNode(nodeSelected);
-                            node.setIcon(icons.getUnchekedIcon());
-                            ((DefaultTreeModel) tree1.getModel()).insertNodeInto(node, (PathTreeNode) tree1.getModel().getRoot(), 0);
-                            pathWatcher.setHashReady(false);
                         }
+                    } else if (SwingUtilities.isRightMouseButton(e) == true) {
+                        pathWatcher.dragFromselected(tree1, treeToPick);
                     }
                 }
             }
@@ -439,15 +433,6 @@ public class SetupForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 disableWatchBlock();
-                pathsCounter = 0;
-                if (pathWatcher.isHashReady() == true) {
-                    progressBarOfWatch.setIndeterminate(false);
-                    progressBarOfWatch.setMaximum((int)pathWatcher.getPathsTotal());
-                    progressBarOfWatch.setMinimum(0);
-                } else {
-                    progressBarOfWatch.setIndeterminate(true);
-                }
-                pathComparator.resetAll();
                 pathWatcher.makeHash(tree1, pathComparator, logObject, hashObject);
 
             }
@@ -557,11 +542,6 @@ public class SetupForm extends JFrame {
         pathWatcher.addMakeListener(new PathWatcherEventListener() {
             @Override
             public void eventPerformed(PathWatcherEvent e) {
-                progressBarOfWatch.setIndeterminate(false);
-                progressBarOfWatch.setValue(0);
-                progressBarOfWatch.setMinimum(0);
-                progressBarOfWatch.setMaximum((int)pathWatcher.getPathsTotal());
-                pathsCounter = 0;
                 pathWatcher.watchHash(pathComparator, logObject, hashObject);
             }
         });
@@ -577,7 +557,6 @@ public class SetupForm extends JFrame {
             public void eventPerformed(PathWatcherEvent e) {
                 if (((PathWatcher)e.getSource()).isHashReady() == true) {
                     progressBarOfWatch.setValue((int)pathWatcher.getPathsCount());
-
                 } else {
 
                 }

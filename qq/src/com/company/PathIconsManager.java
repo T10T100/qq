@@ -38,6 +38,7 @@ public class PathIconsManager {
     private ImageIcon rootIcon;
     private ImageIcon openIcon;
     private ImageIcon closeIcon;
+    private ImageIcon deadIcon;
     private Map<String, ImageIcon> typeIcons;
 
     public PathIconsManager ()
@@ -177,6 +178,14 @@ public class PathIconsManager {
 
         }
     }
+    public void setDeadIcon(String location)
+    {
+        try {
+            this.deadIcon = new ImageIcon(getImage(location));
+        } catch (NullPointerException e) {
+
+        }
+    }
 
     public ImageIcon getFolderIcon()
     {
@@ -205,5 +214,9 @@ public class PathIconsManager {
     public ImageIcon getOpenIcon()
     {
         return openIcon;
+    }
+    public ImageIcon getDeadIcon()
+    {
+        return deadIcon;
     }
 }
