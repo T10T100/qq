@@ -8,18 +8,20 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.io.IOException;
 
 /**
  * Created by Operator on 27.10.2015.
  */
 public class PathTreeCellRenderer extends DefaultTreeCellRenderer {
     private TreePath oldSelectedPath;
-    private boolean selectLogic;
-    private boolean expandlogic;
-
-    public PathTreeCellRenderer (final JTree tree, boolean logic)
+    PathIconsManager icons;
+    public boolean expandlogic;
+    public boolean selectLogic;
+    public PathTreeCellRenderer (final JTree tree, boolean selectLogic, PathIconsManager icons)
     {
-        this.selectLogic = logic;
+        this.icons = icons;
+        this.selectLogic = selectLogic;
             tree.addMouseMotionListener(new MouseMotionListener() {
                 @Override
                 public void mouseDragged(MouseEvent e) {
@@ -68,7 +70,6 @@ public class PathTreeCellRenderer extends DefaultTreeCellRenderer {
         } else {
             comp.setBackground(tree.getBackground());
         }
-        //setIcon(node.getIcon());
         Icon ico = getIcon();
         if (node.getIcon() != null) {
             setIcon(node.getIcon());

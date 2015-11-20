@@ -277,7 +277,10 @@ public class SetupForm extends JFrame {
         icons.setChekedIcon("cheked.jpg");
         icons.setUnchekedIcon("uncheked.jpg");
         icons.setRootIcon("root.jpeg");
+        icons.setCloseIcon("needOpen.jpg");
+        icons.setOpenIcon("needClose.jpg");
 
+        /*
         icons.addTypeIcon("jpg", "type_jpg.jpg");
         icons.addTypeIcon("jpeg", "type_jpg.jpg");
         icons.addTypeIcon("eps", "type_eps.jpg");
@@ -291,17 +294,19 @@ public class SetupForm extends JFrame {
         icons.addTypeIcon("xls", "type_xls.jpg");
         icons.addTypeIcon("doc", "type_doc.jpg");
         icons.addTypeIcon("docx", "type_doc.jpg");
+        */
+        icons.addTypeIcons("");
 
 
         keyParser = new KeyParser();
         pathWatcher = new PathWatcher(icons);
-        cellTreeRenderer = new PathTreeCellRenderer(tree1, false);
+        cellTreeRenderer = new PathTreeCellRenderer(tree1, false, icons);
         outputTextArea.setEditable(false);
         keyTexArea.setText("$");
 
 
         treeToPick.setModel(new DefaultTreeModel(pathWatcher.makeTreeByName(hddRoots)));
-        treeToPick.setCellRenderer(new PathTreeCellRenderer(treeToPick, false));
+        treeToPick.setCellRenderer(new PathTreeCellRenderer(treeToPick, false, icons));
         treeToPick.setBackground(Color.WHITE);
 
         tree1.setModel(new DefaultTreeModel(pathWatcher.makeTreeByName("")));

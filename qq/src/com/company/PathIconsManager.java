@@ -10,6 +10,9 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -33,6 +36,8 @@ public class PathIconsManager {
     private ImageIcon chekedIcon;
     private ImageIcon unchekedIcon;
     private ImageIcon rootIcon;
+    private ImageIcon openIcon;
+    private ImageIcon closeIcon;
     private Map<String, ImageIcon> typeIcons;
 
     public PathIconsManager ()
@@ -54,10 +59,49 @@ public class PathIconsManager {
         }
         return image;
     }
+    private BufferedImage getImage (File location)
+    {
+        BufferedImage image = null;
+        try {
+            image = ImageIO.read(location);
+        } catch (IOException e) {
+            return null;
+        }
+        return image;
+    }
 
     public void addTypeIcon (String name, String location)
     {
         typeIcons.put(name, new ImageIcon(getImage(location)));
+    }
+    public void addTypeIcon (String name, File location)
+    {
+        typeIcons.put(name, new ImageIcon(getImage(location)));
+    }
+
+    public void addTypeIcons (File location)
+    {
+        Path path = location.toPath();
+        File file;
+        Word word = null;
+        String name;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+            for (Path p : stream) {
+                file = p.toFile();
+                name = file.getName();
+                if (name.contains("type_")) {
+                    word = new Word(name, '_');
+                    word.splitValueAndSet('.');
+                    addTypeIcon(word.getName(), file);
+                }
+            }
+        } catch (IOException exception) {
+
+        }
+    }
+    public void addTypeIcons (String location)
+    {
+        addTypeIcons(new File(location));
     }
 
     public ImageIcon getTypeIcon (String name)
@@ -117,7 +161,22 @@ public class PathIconsManager {
         }
     }
 
+    public void setCloseIcon(String location)
+    {
+        try {
+            this.closeIcon = new ImageIcon(getImage(location));
+        } catch (NullPointerException e) {
 
+        }
+    }
+    public void setOpenIcon(String location)
+    {
+        try {
+            this.openIcon = new ImageIcon(getImage(location));
+        } catch (NullPointerException e) {
+
+        }
+    }
 
     public ImageIcon getFolderIcon()
     {
@@ -139,5 +198,12 @@ public class PathIconsManager {
     {
         return this.rootIcon;
     }
-
+    public ImageIcon getCloseIcon()
+    {
+        return closeIcon;
+    }
+    public ImageIcon getOpenIcon()
+    {
+        return openIcon;
+    }
 }
