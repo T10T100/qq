@@ -1,5 +1,6 @@
 package com.company;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -8,11 +9,14 @@ import javax.swing.text.Highlighter;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -50,6 +54,8 @@ public class SetupForm extends JFrame {
     Book hashObject;
     private exelBook mkout;
     private Path workingRoot;
+
+    DateFormat dateFormat;
 
     private String[] hddRoots = {
             "A:/",
@@ -103,7 +109,7 @@ public class SetupForm extends JFrame {
         Dimension d = new Dimension(800, 500);
         this.setSize(d);
         this.setBackground(Color.DARK_GRAY);
-
+        dateFormat = new SimpleDateFormat("YYYY:MM:dd - HH:mm:ss");
 
         setUpInventory();
         startUp();
@@ -230,7 +236,7 @@ public class SetupForm extends JFrame {
 
     private void startUp() {
         int directorySelect = 0;
-        saveOutputAsDialog = new JFileChooser("Please select working directory : ");
+        saveOutputAsDialog = new JFileChooser();
         saveOutputAsDialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         directorySelect = saveOutputAsDialog.showOpenDialog(SetupForm.this);
 
@@ -239,12 +245,20 @@ public class SetupForm extends JFrame {
             this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
         }
 
-        String wp = file.toPath().toString() + File.separator + "PWx_SITC";
+        String wp = file.toPath().toString() + File.separator + "_SITC_";
         workingRoot = Paths.get(wp);
         file = new File(wp);
         if (file.exists() == false) {
             file.mkdir();
         }
+
+        treeToPick.setModel(new DefaultTreeModel(pathWatcher.makeTreeByName(hddRoots)));
+        treeToPick.setCellRenderer(new PathTreeCellRenderer(treeToPick, false, icons));
+        treeToPick.setBackground(Color.WHITE);
+
+        tree1.setModel(new DefaultTreeModel(pathWatcher.makeTreeByName(workingRoot.toString())));
+        tree1.setCellRenderer(cellTreeRenderer);
+        tree1.setBackground(Color.WHITE);
 
         hashObject = new Book(file, "pwh");
         logObject = hashObject.newBookWithin("txt");
@@ -280,22 +294,24 @@ public class SetupForm extends JFrame {
         icons.setOpenIcon("needClose.jpg");
         icons.setDeadIcon("deadRoot.jpg");
 
-        /*
-        icons.addTypeIcon("jpg", "type_jpg.jpg");
-        icons.addTypeIcon("jpeg", "type_jpg.jpg");
-        icons.addTypeIcon("eps", "type_eps.jpg");
-        icons.addTypeIcon("mov", "type_mov.jpg");
-        icons.addTypeIcon("mp3", "type_mp3.jpg");
-        icons.addTypeIcon("pdf", "type_pdf.jpg");
-        icons.addTypeIcon("xls", "type_xls.jpg");
-        icons.addTypeIcon("zip", "type_zip.jpg");
-        icons.addTypeIcon("html", "type_html.jpg");
-        icons.addTypeIcon("css", "type_css.jpg");
-        icons.addTypeIcon("xls", "type_xls.jpg");
-        icons.addTypeIcon("doc", "type_doc.jpg");
-        icons.addTypeIcon("docx", "type_doc.jpg");
-        */
         icons.addTypeIcons("");
+        icons.assignTypeIcon("class",   "java", "jar");
+        icons.assignTypeIcon("exe",     "msi", "bat");
+        icons.assignTypeIcon("eps",     "ps");
+        icons.assignTypeIcon("mov",     "avi", "mpeg", "ac3");
+        icons.assignTypeIcon("conf",    "cfg");
+        icons.assignTypeIcon("doc",     "docx");
+        icons.assignTypeIcon("asm",     "s");
+        icons.assignTypeIcon("xls",     "xlsx");
+
+
+        BufferedImage image = null;
+        try {
+            image = ImageIO.read(new File("jjj.jpg"));
+        } catch (IOException e) {
+
+        }
+        this.setIconImage(image);
 
 
         keyParser = new KeyParser();
@@ -303,15 +319,6 @@ public class SetupForm extends JFrame {
         cellTreeRenderer = new PathTreeCellRenderer(tree1, false, icons);
         outputTextArea.setEditable(false);
         keyTexArea.setText("$");
-
-
-        treeToPick.setModel(new DefaultTreeModel(pathWatcher.makeTreeByName(hddRoots)));
-        treeToPick.setCellRenderer(new PathTreeCellRenderer(treeToPick, false, icons));
-        treeToPick.setBackground(Color.WHITE);
-
-        tree1.setModel(new DefaultTreeModel(pathWatcher.makeTreeByName("")));
-        tree1.setCellRenderer(cellTreeRenderer);
-        tree1.setBackground(Color.WHITE);
 
         pathComparator = new PathComparator();
 
@@ -324,7 +331,10 @@ public class SetupForm extends JFrame {
                 if (e.getSource() == treeToPick) {
                     if (SwingUtilities.isLeftMouseButton(e) == true) {
                         if (e.getClickCount() >= 2) {
-
+                            PathTreeNode node = (PathTreeNode)treeToPick.getLastSelectedPathComponent();
+                            if (node != null){
+                                showPathInfo((Path) node.getUserObject());
+                            }
                         }
                     } else if (SwingUtilities.isRightMouseButton(e) == true) {
                         pathWatcher.dragFromselected(tree1, treeToPick);
@@ -382,6 +392,17 @@ public class SetupForm extends JFrame {
                     if (SwingUtilities.isRightMouseButton(e)) {
                         pathWatcher.removeSelected(tree1);
                         pathWatcher.setHashReady(false);
+                    } else if (SwingUtilities.isLeftMouseButton(e)) {
+                        if (e.getClickCount() >= 2) {
+                            if (pathWatcher.isTreeEmpty(tree1) == true) {
+                                tree1.setModel(new DefaultTreeModel(pathWatcher.makeTreeByName(workingRoot.toString())));
+                            } else {
+                                PathTreeNode node = (PathTreeNode) tree1.getLastSelectedPathComponent();
+                                if (node != null) {
+                                    showPathInfo((Path) node.getUserObject());
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -588,6 +609,44 @@ public class SetupForm extends JFrame {
         keyTexArea.setEnabled(false);
         searchField.setEnabled(false);
         buttonToBreak.setEnabled(true);
+    }
+
+    private String printSize (long size)
+    {
+        char prefix = ' ';
+        if (size > 2000000000) {
+            size /= 1073741823;
+            prefix = 'G';
+        } else if (size > 2000000) {
+            size /= 1048575;
+            prefix = 'M';
+        } else if (size > 20000) {
+            size /= 1024;
+            prefix = 'K';
+        } else {
+        }
+        return Long.toString(size) + ' ' + prefix + "Bytes";
+    }
+
+    private void showPathInfo (Path path)
+    {
+        if (path == null) {
+            return;
+        }
+        String message = new String();
+        File file = path.toFile();
+        if (file.isDirectory() == true) {
+            message += "Directory \"" +
+                       file.getName() + "\"\n";
+        } else {
+            message += "File \"" +
+                        file.getName() + "\"\n" +
+                        "Size \"" +
+                        printSize(file.length()) + "\"\n" +
+                        "Last modify :" +
+                        dateFormat.format(new Date(file.lastModified()));
+        }
+        JOptionPane.showMessageDialog(this, message);
     }
 
 }

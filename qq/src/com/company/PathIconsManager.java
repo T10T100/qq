@@ -50,6 +50,11 @@ public class PathIconsManager {
         typeIcons = new HashMap<>();
     }
 
+    public ImageIcon getImageFrom (String location)
+    {
+        return new ImageIcon(getImage(location));
+    }
+
     private BufferedImage getImage (String location)
     {
         BufferedImage image = null;
@@ -118,6 +123,18 @@ public class PathIconsManager {
         String name = file.getName();
         name = name.substring(name.lastIndexOf(".") + 1);
         return getTypeIcon(name);
+    }
+
+    public void assignTypeIcon (String dest, String... src)
+    {
+        ImageIcon icon = typeIcons.get(dest);
+        if (icon == null) {
+            return;
+        }
+        for (String s : src) {
+            System.out.println(s);
+            typeIcons.put(s, icon);
+        }
     }
 
     public void setFolderIcon(String location)

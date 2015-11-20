@@ -131,7 +131,7 @@ public class PathWatcher {
     public PathWatcher(PathIconsManager icons, JProgressBar statusBar)
     {
         this.icons = icons;
-        dateFormat = new SimpleDateFormat("YYYY:MM:dd : HH:mm:ss");
+        dateFormat = new SimpleDateFormat("YYYY:MM:dd - HH:mm:ss");
         this.statusBar = statusBar;
         hashReady = false;
         pathsTotal = 0;
@@ -267,21 +267,23 @@ public class PathWatcher {
     private void remove (JTree tree, PathTreeNode node)
     {
         DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
-        if (model.getRoot() == node) {
+        PathTreeNode root = (PathTreeNode)model.getRoot();
+        if (root == null) {
             return;
         }
         try {
             if (node != null) {
-                model.removeNodeFromParent(node);
+                if (node.getParent() != null) {
+                    model.removeNodeFromParent(node);
+                } else {
+                    clearTree(tree);
+                }
             }
         } catch (NullPointerException exception) {
 
         }
-        PathTreeNode root = (PathTreeNode)model.getRoot();
-        if (root.getChildCount() == 0) {
+        if (isTreeEmpty(tree) == true) {
             root.setIcon(icons.getDeadIcon());
-        } else {
-            root.setIcon(icons.getRootIcon());
         }
         tree.repaint();
     }
@@ -478,5 +480,27 @@ public class PathWatcher {
     public long getPathsCount ()
     {
         return this.pathsCount;
+    }
+
+    public boolean isTreeEmpty (JTree tree)
+    {
+        PathTreeNode node = (PathTreeNode)(tree.getModel().getRoot());
+        if (node.getChildCount() == 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public void clearTree (JTree tree)
+    {
+        DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
+        PathTreeNode root = (PathTreeNode)model.getRoot();
+        int count = root.getChildCount();
+        if (count == 0) {
+            return;
+        }
+        for (int i = 0; i < count; i++) {
+            model.removeNodeFromParent( (MutableTreeNode)root.getChildAt(i) );
+        }
     }
 }
