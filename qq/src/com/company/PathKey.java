@@ -1,5 +1,7 @@
 package com.company;
 
+import org.w3c.dom.Attr;
+
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -64,40 +66,26 @@ public class PathKey {
         return this.compareToName(arg, size);
     }
 
-    private String printSize (long size)
-    {
-        char prefix = ' ';
-        if (size > 2000000000) {
-            size /= 1073741823;
-            prefix = 'G';
-        } else if (size > 2000000) {
-            size /= 1048575;
-            prefix = 'M';
-        } else if (size > 20000) {
-            size /= 1024;
-            prefix = 'K';
-        } else {
-        }
-        return Long.toString(size) + ' ' + prefix + "Bytes";
-    }
 
     public ArrayList<textBoundedItem> getTextItems ()
     {
+        AttributesFormatter formatter = new AttributesFormatter();
         ArrayList<textBoundedItem> items = new ArrayList<>();
         items.add(new textBoundedItem(this.key.toString(), new Color(38, 17, 117, 100)));
         items.add(new textBoundedItem("Matched :         " + Integer.toString(this.matched) + " Paths"));
-        items.add(new textBoundedItem("Size of matched : " + this.printSize(this.matchedSize) + '\n', new Color(224, 130, 30, 150)));
+        items.add(new textBoundedItem("Size of matched : " + formatter.printSize(this.matchedSize) + '\n', new Color(224, 130, 30, 150)));
         return items;
     }
 
     @Override
     public String toString()
     {
+        AttributesFormatter formatter = new AttributesFormatter();
         String output = new String (this.key.toString() +
                 "\r\nMatched : \"" +
                 Integer.toString(this.matched) +
                 "\" Paths\r\nSize of matched : " +
-                this.printSize(this.matchedSize) +
+                formatter.printSize(this.matchedSize) +
                 "\r\n\n");
         return output;
     }

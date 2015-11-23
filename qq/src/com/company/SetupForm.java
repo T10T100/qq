@@ -399,7 +399,9 @@ public class SetupForm extends JFrame {
                             } else {
                                 PathTreeNode node = (PathTreeNode) tree1.getLastSelectedPathComponent();
                                 if (node != null) {
-                                    showPathInfo((Path) node.getUserObject());
+                                    if ((node.getUserObject()).getClass() != PathTreeNode.class) {
+                                        showPathInfo((Path) node.getUserObject());
+                                    }
                                 }
                             }
                         }

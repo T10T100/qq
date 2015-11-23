@@ -73,10 +73,10 @@ public class PathComparator {
     public ArrayList<textBoundedItem> getTextItems ()
     {
         ArrayList<textBoundedItem> items = new ArrayList<>();
-
-        items.add(new textBoundedItem("Watch time : " + this.printTime(this.timeEnd - this.timeStart), Color.LIGHT_GRAY));
+        AttributesFormatter formatter = new AttributesFormatter();
+        items.add(new textBoundedItem("Watch time : " + formatter.printTime(this.timeEnd - this.timeStart), Color.LIGHT_GRAY));
         items.add(new textBoundedItem("Watched :    " + Long.toString(this.watched) + " Paths", Color.LIGHT_GRAY));
-        items.add(new textBoundedItem("Total Size : " + this.printSize(this.totalSize), new Color(227, 73, 59, 150)));
+        items.add(new textBoundedItem("Total Size : " + formatter.printSize(this.totalSize), new Color(227, 73, 59, 150)));
 
         for (PathKey key : keys) {
             items.addAll(key.getTextItems());
@@ -87,10 +87,10 @@ public class PathComparator {
     public void log (Book log)
     {
         log.cleanUp();
-
-        log.write("Watch time : " + this.printTime(this.timeEnd - this.timeStart) + "\n");
+        AttributesFormatter formatter = new AttributesFormatter();
+        log.write("Watch time : " + formatter.printTime(this.timeEnd - this.timeStart) + "\n");
         log.write("Watched : \"" + Long.toString(this.watched) + "\" Paths\n");
-        log.write("Total Size : " + this.printSize(this.totalSize) + "\n\n");
+        log.write("Total Size : " + formatter.printSize(this.totalSize) + "\n\n");
         for (PathKey key : keys) {
             log.write(key.toString());
         }
@@ -98,37 +98,5 @@ public class PathComparator {
         log.finish("PWLog");
     }
 
-    private String printSize (long size)
-    {
-        char prefix = ' ';
-        if (size > 2000000000) {
-            size /= 1073741823;
-            prefix = 'G';
-        } else if (size > 2000000) {
-            size /= 1048575;
-            prefix = 'M';
-        } else if (size > 20000) {
-            size /= 1024;
-            prefix = 'K';
-        } else {
-        }
-        return Long.toString(size) + ' ' + prefix + "Bytes";
-    }
-
-    public String printTime (long mills)
-    {
-        mills = Math.abs(mills);
-        int seconds = (int)(mills / 1000);
-        int minutes = (seconds / 60) % 60;
-        int hours = (minutes / 60) % 24;
-        LocalTime time;
-        try {
-            time = LocalTime.of(seconds, minutes, hours, (int)mills);
-            return time.toString();
-        } catch (DateTimeException exception) {
-            return "time exception!";
-        }
-
-    }
 
 }
