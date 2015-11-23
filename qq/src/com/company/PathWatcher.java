@@ -131,9 +131,13 @@ public class PathWatcher {
                 if (w.getValue().isEmpty() == true) {
                     continue;
                 }
+                if (w.getName().isEmpty() == true) {
+                    continue;
+                }
+                w.removeSpacesFromValue();
                 location = hash.newDirectoryThere("extension_icons");
-                icons.addUserTypeIcon(iconPainter.drawIcon(location.toPath(), w.getValue()), w.getValue());
-            }
+                icons.addUserTypeIcon(iconPainter.drawIcon(location.toPath(), w.getValue()), w.getName());
+        }
             fireWatchEvents();
         }
     }

@@ -433,7 +433,7 @@ public class Word {
         char[] array = this.name.toCharArray();
         String name = "";
         for (int i = 0; i < array.length; i++) {
-            if (Character.isSpaceChar(array[i]) == false) {
+            if (Character.isSpaceChar(array[i]) == false && array[i] != '\n') {
                 name += array[i];
             }
         }
@@ -526,6 +526,9 @@ public class Word {
 
     public String getName()
     {
+        if (name == null) {
+            return "null";
+        }
         return name;
     }
 

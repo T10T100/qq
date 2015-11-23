@@ -67,7 +67,7 @@ public class PathIconPainter extends JComponent {
         File imageFile = new File(filePath);
         if (imageFile.exists() != true) {
             try {
-                ImageIO.write(image, "jpg", imageFile);
+                ImageIO.write(image, "jpeg", imageFile);
             } catch (IOException exception) {
 
             }
