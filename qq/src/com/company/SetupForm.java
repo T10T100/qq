@@ -12,12 +12,14 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Created by Operator on 26.10.2015.
@@ -26,18 +28,16 @@ public class SetupForm extends JFrame {
     private JPanel contentPanel;
     private JTextArea outputTextArea;
     private JTextArea keyTexArea;
-    private JCheckBox watchMode;
     private JButton stepButton;
     private JLabel labelToCompare;
-    private JLabel labelToMode;
     private JTree treeToPick;
     private JLabel treeInfoLabel;
     private JTree tree1;
-    private JCheckBox expandMode;
     private JTextField searchField;
     private JComboBox charsetChooser;
     private JProgressBar progressBarOfWatch;
     private JButton buttonToBreak;
+    private JButton buttonToLoadTemplate;
 
     private JFileChooser saveOutputAsDialog;
 
@@ -312,6 +312,31 @@ public class SetupForm extends JFrame {
         icons.assignTypeIcon("xls",     "xlsx");
 
 
+        try {
+            Image image = ImageIO.read(new File("loadTemplateIco.jpg"));
+            if (image != null) {
+                buttonToLoadTemplate.setIcon(new ImageIcon(image));
+            }
+        } catch (IOException exception) {
+
+        }
+
+        try {
+            Image image = ImageIO.read(new File("eyeIco.jpg"));
+            if (image != null) {
+                stepButton.setIcon(new ImageIcon(image));
+            }
+        } catch (IOException exception) {
+
+        }
+        try {
+            Image image = ImageIO.read(new File("breakIco.jpg"));
+            if (image != null) {
+                buttonToBreak.setIcon(new ImageIcon(image));
+            }
+        } catch (IOException exception) {
+
+        }
         BufferedImage image = null;
         try {
             image = ImageIO.read(new File("jjj.jpg"));
@@ -474,6 +499,23 @@ public class SetupForm extends JFrame {
                 pathWatcher.setBreaker(true);
             }
         });
+        buttonToLoadTemplate.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveOutputAsDialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                int errno = saveOutputAsDialog.showOpenDialog(SetupForm.this);
+                if (errno == JFileChooser.CANCEL_OPTION || errno == JFileChooser.ERROR_OPTION) {
+                    return;
+                }
+                File file = saveOutputAsDialog.getSelectedFile();
+                if (file.getName().contains("txt") == false) {
+                    return;
+                }
+                loadKeysFromTemplate(file.toPath());
+                saveOutputAsDialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            }
+        });
+
     }
 
     private void initOthers ()
@@ -510,22 +552,6 @@ public class SetupForm extends JFrame {
                 super.mouseExited(e);
                 if (e.getSource() == keyTexArea) {
                     setCursor(Cursor.getDefaultCursor());
-                }
-            }
-        });
-        watchMode.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == watchMode) {
-                    cellTreeRenderer.setLogic(watchMode.isSelected());
-                }
-            }
-        });
-        expandMode.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == expandMode) {
-                    cellTreeRenderer.setExpandlogic(expandMode.isSelected());
                 }
             }
         });
@@ -624,6 +650,46 @@ public class SetupForm extends JFrame {
     private void showPathInfo (Path path)
     {
         JOptionPane.showMessageDialog(this, formatter.showPathInfo(path));
+    }
+
+
+    private String templateInput;
+    private void loadKeysFromTemplate (Path location)
+    {
+        Stream<String> output = null;
+        templateInput = "";
+        try {
+            output = Files.lines(location, hashObject.getCharset());
+        } catch (IOException exception) {
+            JOptionPane.showMessageDialog(this, "Cannot read this !");
+            return;
+        }
+        try {
+            output.forEach(s -> addToTemplate(s));
+
+        } catch (UncheckedIOException exception) {
+            JOptionPane.showMessageDialog(this, "Cannot read line !");
+            return;
+        }
+        keyTexArea.setText(templateInput);
+        keyParser.setUp(pathComparator, keyTexArea.getText());
+        Word w;
+        String searchArgs = "";
+        for (PathKey key : pathComparator.getKeys()) {
+            w = key.getKey();
+            if (w.getValue().isEmpty() == true) {
+                continue;
+            }
+            searchArgs += w.getValue() + ",";
+        }
+        searchArgs += ",";
+        searchField.setText(searchArgs);
+        searchProcess(outputTextArea, searchField);
+    }
+
+    void addToTemplate (String from)
+    {
+        templateInput += from;
     }
 
 }
