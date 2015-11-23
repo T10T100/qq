@@ -56,6 +56,7 @@ public class SetupForm extends JFrame {
     private Path workingRoot;
 
     DateFormat dateFormat;
+    AttributesFormatter formatter;
 
     private String[] hddRoots = {
             "A:/",
@@ -110,6 +111,7 @@ public class SetupForm extends JFrame {
         this.setSize(d);
         this.setBackground(Color.DARK_GRAY);
         dateFormat = new SimpleDateFormat("YYYY:MM:dd - HH:mm:ss");
+        formatter = new AttributesFormatter();
 
         setUpInventory();
         startUp();
@@ -632,23 +634,7 @@ public class SetupForm extends JFrame {
 
     private void showPathInfo (Path path)
     {
-        if (path == null) {
-            return;
-        }
-        String message = new String();
-        File file = path.toFile();
-        if (file.isDirectory() == true) {
-            message += "Directory \"" +
-                       file.getName() + "\"\n";
-        } else {
-            message += "File \"" +
-                        file.getName() + "\"\n" +
-                        "Size \"" +
-                        printSize(file.length()) + "\"\n" +
-                        "Last modify :" +
-                        dateFormat.format(new Date(file.lastModified()));
-        }
-        JOptionPane.showMessageDialog(this, message);
+        JOptionPane.showMessageDialog(this, formatter.showPathInfo(path));
     }
 
 }
