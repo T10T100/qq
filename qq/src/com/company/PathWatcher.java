@@ -516,4 +516,51 @@ public class PathWatcher {
             model.removeNodeFromParent( (MutableTreeNode)root.getChildAt(i) );
         }
     }
+
+    /*
+    public void updateTree (JTree tree)
+    {
+        DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
+        PathTreeNode newRoot = new PathTreeNode("A:/", icons.getRootIcon());
+        DefaultTreeModel newModel = new DefaultTreeModel(newRoot);
+        ArrayList<PathTreeNode> leafs = new ArrayList<>();
+        ArrayList<PathTreeNode> nodes = new ArrayList<>();
+
+        PathTreeNode root = (PathTreeNode)model.getRoot();
+        if (root == null) {
+            return;
+        }
+        if (root.isLeaf() == true) {
+            return;
+        }
+        nodes.add(root);
+        PathTreeNode temp;
+        while (nodes.isEmpty() == false) {
+            nodes.remove(0);
+            int childCount = root.getChildCount();
+            if (childCount == 0) {
+                continue;
+            }
+            for (int i = 0; i < childCount; i++) {
+                try {
+                    temp = (PathTreeNode) root.getChildAt(i);
+                } catch (ArrayIndexOutOfBoundsException exception) {
+                    break;
+                }
+                if (root.isLeaf() == true) {
+                    leafs.add(temp);
+                } else {
+                    nodes.add(temp);
+                }
+                if (temp.getUserObject().getClass() == Path.class) {
+                    Path path = (Path) temp.getUserObject();
+                    temp.setIcon(icons.getTypeIcon(path.toFile().getName()));
+                }
+                newRoot.add(temp);
+            }
+        }
+        tree.setModel(newModel);
+    }
+    */
+
 }

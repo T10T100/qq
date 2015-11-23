@@ -41,6 +41,7 @@ public class PathIconsManager {
     private ImageIcon deadIcon;
     private Map<String, ImageIcon> typeIcons;
     private Map<String, ImageIcon> userTypeIcons;
+    private boolean skipDefaults;
 
     public PathIconsManager ()
     {
@@ -50,6 +51,7 @@ public class PathIconsManager {
         this.unchekedIcon = null;
         typeIcons = new HashMap<>();
         userTypeIcons = new HashMap<>();
+        skipDefaults = true;
     }
 
     public ImageIcon getImageFrom (String location)
@@ -159,7 +161,7 @@ public class PathIconsManager {
 
     public ImageIcon getTypeIcon (String name)
     {
-        if (typeIcons.containsKey(name) == true) {
+        if (typeIcons.containsKey(name) == true && skipDefaults == false) {
             return typeIcons.get(name);
         } else if (userTypeIcons.containsKey(name) == true) {
             return userTypeIcons.get(name);
@@ -296,5 +298,10 @@ public class PathIconsManager {
     public ImageIcon getDeadIcon()
     {
         return deadIcon;
+    }
+
+    public void setSkipDefaults(boolean skipDefaults)
+    {
+        this.skipDefaults = skipDefaults;
     }
 }

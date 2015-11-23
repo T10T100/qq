@@ -38,6 +38,7 @@ public class SetupForm extends JFrame {
     private JProgressBar progressBarOfWatch;
     private JButton buttonToBreak;
     private JButton buttonToLoadTemplate;
+    private JCheckBox checkBoxToUseDefaultIcons;
 
     private JFileChooser saveOutputAsDialog;
 
@@ -489,7 +490,8 @@ public class SetupForm extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 disableWatchBlock();
                 pathWatcher.makeHash(tree1, pathComparator, logObject, hashObject);
-
+                //pathWatcher.updateTree(treeToPick);
+                //pathWatcher.updateTree(tree1);
             }
         });
         buttonToBreak.setEnabled(false);
@@ -618,6 +620,16 @@ public class SetupForm extends JFrame {
                 }
             }
         });
+        checkBoxToUseDefaultIcons.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == checkBoxToUseDefaultIcons) {
+                    icons.setSkipDefaults(! checkBoxToUseDefaultIcons.isSelected());
+                    //pathWatcher.updateTree(treeToPick);
+                    //pathWatcher.updateTree(tree1);
+                }
+            }
+        });
 
 
         for (String chset : charsets) {
@@ -633,6 +645,7 @@ public class SetupForm extends JFrame {
         charsetChooser.setEnabled(true);
         keyTexArea.setEnabled(true);
         searchField.setEnabled(true);
+        checkBoxToUseDefaultIcons.setEnabled(true);
         buttonToBreak.setEnabled(false);
     }
     private void disableWatchBlock ()
@@ -643,6 +656,7 @@ public class SetupForm extends JFrame {
         charsetChooser.setEnabled(false);
         keyTexArea.setEnabled(false);
         searchField.setEnabled(false);
+        checkBoxToUseDefaultIcons.setEnabled(false);
         buttonToBreak.setEnabled(true);
     }
 
@@ -685,11 +699,13 @@ public class SetupForm extends JFrame {
         searchArgs += ",";
         searchField.setText(searchArgs);
         searchProcess(outputTextArea, searchField);
+        //pathWatcher.updateTree(treeToPick);
+        //pathWatcher.updateTree(tree1);
     }
 
     void addToTemplate (String from)
     {
-        templateInput += from;
+        templateInput += from + "\n";
     }
 
 }

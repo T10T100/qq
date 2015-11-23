@@ -581,7 +581,7 @@ public class Word {
                 args += arg + ", ";
             }
         }
-        return "[" + this.name + "] = [" + this.value + "] : " + args;
+        return  this.name + " = " + this.value + " : " + args;
     }
 
     public class BoundedNumber {
