@@ -40,6 +40,7 @@ public class PathIconsManager {
     private ImageIcon closeIcon;
     private ImageIcon deadIcon;
     private Map<String, ImageIcon> typeIcons;
+    private Map<String, ImageIcon> userTypeIcons;
 
     public PathIconsManager ()
     {
@@ -48,6 +49,7 @@ public class PathIconsManager {
         this.chekedIcon = null;
         this.unchekedIcon = null;
         typeIcons = new HashMap<>();
+        userTypeIcons = new HashMap<>();
     }
 
     public ImageIcon getImageFrom (String location)
@@ -84,6 +86,23 @@ public class PathIconsManager {
     {
         typeIcons.put(name, new ImageIcon(getImage(location)));
     }
+    public void addUserTypeIcon (String name, String location)
+    {
+        userTypeIcons.put(name, new ImageIcon(getImage(location)));
+    }
+    public void addUserTypeIcon (String name, File location)
+    {
+        userTypeIcons.put(name, new ImageIcon(getImage(location)));
+    }
+    public void addUserTypeIcon (ImageIcon icon, String type)
+    {
+        userTypeIcons.put(type, icon);
+    }
+    public void clearUserIcons ()
+    {
+        userTypeIcons.clear();
+    }
+
 
     public void addTypeIcons (File location)
     {
@@ -105,17 +124,48 @@ public class PathIconsManager {
 
         }
     }
+    public void addUserTypeIcons (String location)
+    {
+        addUserTypeIcons(new File(location));
+    }
+
+    public void addUserTypeIcons (File location)
+    {
+        Path path = location.toPath();
+        File file;
+        Word word = null;
+        String name;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+            for (Path p : stream) {
+                file = p.toFile();
+                name = file.getName();
+                if (name.contains("type_")) {
+                    word = new Word(name, '_');
+                    word.splitValueAndSet('.');
+                    addUserTypeIcon(word.getName(), file);
+                }
+            }
+        } catch (IOException exception) {
+
+        }
+    }
     public void addTypeIcons (String location)
     {
         addTypeIcons(new File(location));
     }
 
+
+
+
     public ImageIcon getTypeIcon (String name)
     {
-        if (typeIcons.containsKey(name) == false) {
+        if (typeIcons.containsKey(name) == true) {
+            return typeIcons.get(name);
+        } else if (userTypeIcons.containsKey(name) == true) {
+            return userTypeIcons.get(name);
+        } else {
             return fileIcon;
         }
-        return typeIcons.get(name);
     }
 
     public ImageIcon getTypeIcon (File file)
@@ -134,6 +184,17 @@ public class PathIconsManager {
         for (String s : src) {
             System.out.println(s);
             typeIcons.put(s, icon);
+        }
+    }
+    public void assignUserTypeIcon (String dest, String... src)
+    {
+        ImageIcon icon = typeIcons.get(dest);
+        if (icon == null) {
+            return;
+        }
+        for (String s : src) {
+            System.out.println(s);
+            userTypeIcons.put(s, icon);
         }
     }
 

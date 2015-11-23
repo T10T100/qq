@@ -16,6 +16,7 @@ import java.util.stream.Stream;
  */
 public class Book {
     private String name;
+    private ArrayList<File> folders;
     private ArrayList<String> text;
     private ArrayList<Path> index;
     private ArrayList<Book> childs;
@@ -28,6 +29,7 @@ public class Book {
 
     public Book(File location, String bookName)
     {
+        folders = new ArrayList<>();
         index = new ArrayList<>();
         text = new ArrayList<>();
         childs = new ArrayList<>();
@@ -57,6 +59,20 @@ public class Book {
             this.eChilds.add(eBook);
         }
         return eBook;
+    }
+
+    public File newDirectoryThere (String name)
+    {
+        String folderPath = root.toString() + File.separator + name;
+        File file = new File(folderPath);
+        if (file.exists() == true) {
+            if (folders.contains(file) == false) {
+                folders.add(file);
+            }
+            return file;
+        }
+        file.mkdir();
+        return file;
     }
 
     public void write (String line)
@@ -176,6 +192,16 @@ public class Book {
         for (Book b : childs) {
             b.cleanUp();
         }
+        /*
+        for (File folder : folders) {
+            try {
+                Files.deleteIfExists(folder.toPath());
+            } catch (IOException exception) {
+
+            }
+        }
+        folders.removeAll(folders);
+        */
     }
     void cleanAll ()
     {
@@ -196,6 +222,14 @@ public class Book {
             }
         }
         childs.removeAll(childs);
+        for (File folder : folders) {
+            try {
+                Files.deleteIfExists(folder.toPath());
+            } catch (IOException exception) {
+
+            }
+        }
+        folders.removeAll(folders);
     }
 
 

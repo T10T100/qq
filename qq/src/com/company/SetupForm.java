@@ -57,6 +57,7 @@ public class SetupForm extends JFrame {
 
     DateFormat dateFormat;
     AttributesFormatter formatter;
+    PathIconPainter iconsPainter;
 
     private String[] hddRoots = {
             "A:/",
@@ -84,6 +85,7 @@ public class SetupForm extends JFrame {
 
     private class WindowEventListener implements WindowListener {
         public void windowClosing(WindowEvent arg0) {
+            iconsPainter.cleanUp();
             hashObject.cleanAll();
             try {
                 Files.deleteIfExists(workingRoot);
@@ -286,6 +288,9 @@ public class SetupForm extends JFrame {
         highlightColors.add(new Color(38, 17, 117, 100));
         highlightColorsIterator = highlightColors.iterator();
 
+        iconsPainter = new PathIconPainter();
+        //iconsPainter.drawIcon("", "JPEG");
+
         icons = new PathIconsManager();
         icons.setFolderIcon("folder.jpg");
         icons.setFileIcon("file.jpg");
@@ -317,7 +322,7 @@ public class SetupForm extends JFrame {
 
 
         keyParser = new KeyParser();
-        pathWatcher = new PathWatcher(icons, progressBarOfWatch);
+        pathWatcher = new PathWatcher(icons, progressBarOfWatch, iconsPainter);
         cellTreeRenderer = new PathTreeCellRenderer(tree1, false, icons);
         outputTextArea.setEditable(false);
         keyTexArea.setText("$");
@@ -615,22 +620,6 @@ public class SetupForm extends JFrame {
         buttonToBreak.setEnabled(true);
     }
 
-    private String printSize (long size)
-    {
-        char prefix = ' ';
-        if (size > 2000000000) {
-            size /= 1073741823;
-            prefix = 'G';
-        } else if (size > 2000000) {
-            size /= 1048575;
-            prefix = 'M';
-        } else if (size > 20000) {
-            size /= 1024;
-            prefix = 'K';
-        } else {
-        }
-        return Long.toString(size) + ' ' + prefix + "Bytes";
-    }
 
     private void showPathInfo (Path path)
     {

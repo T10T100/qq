@@ -22,6 +22,7 @@ public class PathWatcher {
 
     private DateFormat dateFormat;
     private PathIconsManager icons;
+    private PathIconPainter iconPainter;
     private Vector<PathWatcherEventListener> listenersMake;
     private Vector<PathWatcherEventListener> listenersWatch;
     private Vector<PathWatcherEventListener> listenersIntermediateMake;
@@ -89,7 +90,6 @@ public class PathWatcher {
         @Override
         public void run() {
             super.run();
-
             pathsCount = 0;
             statusBar.setIndeterminate(false);
             statusBar.setValue(0);
@@ -122,15 +122,28 @@ public class PathWatcher {
             }
             comparator.setTimeEnd(System.currentTimeMillis());
             comparator.log(log);
+            Word w;
+            File location;
+            iconPainter.cleanUp();
+            icons.clearUserIcons();
+            for (PathKey key : comparator.getKeys()) {
+                w = key.getKey();
+                if (w.getValue().isEmpty() == true) {
+                    continue;
+                }
+                location = hash.newDirectoryThere("extension_icons");
+                icons.addUserTypeIcon(iconPainter.drawIcon(location.toPath(), w.getValue()), w.getValue());
+            }
             fireWatchEvents();
         }
     }
 
     HashThread hashThread;
 
-    public PathWatcher(PathIconsManager icons, JProgressBar statusBar)
+    public PathWatcher(PathIconsManager icons, JProgressBar statusBar, PathIconPainter iconPainter)
     {
         this.icons = icons;
+        this.iconPainter = iconPainter;
         dateFormat = new SimpleDateFormat("YYYY:MM:dd - HH:mm:ss");
         this.statusBar = statusBar;
         hashReady = false;

@@ -98,5 +98,8 @@ public class PathComparator {
         log.finish("PWLog");
     }
 
-
+    public ArrayList<PathKey> getKeys()
+    {
+        return keys;
+    }
 }
