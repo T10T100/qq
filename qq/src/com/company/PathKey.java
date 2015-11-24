@@ -13,9 +13,20 @@ public class PathKey {
     protected int matched;
     protected long matchedSize;
     protected int matchedToArgs;
+    Color linkColor;
 
     public PathKey(Word key)
     {
+        ArrayList<String> array = key.getArrayFromValueAndSetValueAsFirst('$', '$');
+        if (array.isEmpty() == true) {
+            linkColor = Color.red;
+        } else {
+            if (array.get(0).contains("black") == true) {
+                this.linkColor = Color.black;
+            } else {
+                linkColor = Color.red;
+            }
+        }
         this.key = key;
         this.matched = 0;
         this.matchedSize = 0;
@@ -113,6 +124,11 @@ public class PathKey {
 
     public void setMatchedToArgs(int matchedToArgs) {
         this.matchedToArgs = matchedToArgs;
+    }
+
+    public Color getLinkColor ()
+    {
+        return linkColor;
     }
 
 }

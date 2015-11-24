@@ -53,7 +53,6 @@ public class SetupForm extends JFrame {
 
     private Book logObject;
     Book hashObject;
-    private exelBook mkout;
     private Path workingRoot;
 
     DateFormat dateFormat;
@@ -366,7 +365,7 @@ public class SetupForm extends JFrame {
                         if (e.getClickCount() >= 2) {
                             PathTreeNode node = (PathTreeNode)treeToPick.getLastSelectedPathComponent();
                             if (node != null){
-                                showPathInfo((Path) node.getUserObject());
+                                showPathInfo(new File(node.getUserObject().toString()));
                             }
                         }
                     } else if (SwingUtilities.isRightMouseButton(e) == true) {
@@ -433,7 +432,7 @@ public class SetupForm extends JFrame {
                                 PathTreeNode node = (PathTreeNode) tree1.getLastSelectedPathComponent();
                                 if (node != null) {
                                     if ((node.getUserObject()).getClass() != PathTreeNode.class) {
-                                        showPathInfo((Path) node.getUserObject());
+                                        showPathInfo(new File(node.getUserObject().toString()));
                                     }
                                 }
                             }
@@ -490,8 +489,7 @@ public class SetupForm extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 disableWatchBlock();
                 pathWatcher.makeHash(tree1, pathComparator, logObject, hashObject);
-                //pathWatcher.updateTree(treeToPick);
-                //pathWatcher.updateTree(tree1);
+                rebaseAll();;
             }
         });
         buttonToBreak.setEnabled(false);
@@ -563,7 +561,6 @@ public class SetupForm extends JFrame {
                 super.keyTyped(e);
                 if (e.getSource() == searchField) {
                     searchProcess(outputTextArea, searchField);
-                    //searchProcess(parsedKeys, searchField);
                 }
             }
         });
@@ -625,8 +622,7 @@ public class SetupForm extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == checkBoxToUseDefaultIcons) {
                     icons.setSkipDefaults(! checkBoxToUseDefaultIcons.isSelected());
-                    //pathWatcher.updateTree(treeToPick);
-                    //pathWatcher.updateTree(tree1);
+                    rebaseAll();
                 }
             }
         });
@@ -661,9 +657,9 @@ public class SetupForm extends JFrame {
     }
 
 
-    private void showPathInfo (Path path)
+    private void showPathInfo (File file)
     {
-        JOptionPane.showMessageDialog(this, formatter.showPathInfo(path));
+        JOptionPane.showMessageDialog(this, formatter.showPathInfo(file));
     }
 
 
@@ -699,13 +695,16 @@ public class SetupForm extends JFrame {
         searchArgs += ",";
         searchField.setText(searchArgs);
         searchProcess(outputTextArea, searchField);
-        //pathWatcher.updateTree(treeToPick);
-        //pathWatcher.updateTree(tree1);
+        rebaseAll();
     }
 
-    void addToTemplate (String from)
+    private void addToTemplate (String from)
     {
         templateInput += from + "\n";
+    }
+    private void rebaseAll ()
+    {
+        pathWatcher.rebaseTree(tree1);
     }
 
 }

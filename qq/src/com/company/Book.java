@@ -20,7 +20,6 @@ public class Book {
     private ArrayList<String> text;
     private ArrayList<Path> index;
     private ArrayList<Book> childs;
-    private ArrayList<exelBook> eChilds;
     private Path root;
     private final int linesLimit = 50000;
     private int linesCount;
@@ -33,7 +32,6 @@ public class Book {
         index = new ArrayList<>();
         text = new ArrayList<>();
         childs = new ArrayList<>();
-        eChilds = new ArrayList<>();
         this.name = bookName;
         this.root = location.toPath();
         this.linesCount = 0;
@@ -52,14 +50,6 @@ public class Book {
         return book;
     }
 
-    public exelBook newExelBookThere (String name)
-    {
-        exelBook eBook = new exelBook(this.root.toFile(), name);
-        if (this.eChilds.contains(eBook) == false) {
-            this.eChilds.add(eBook);
-        }
-        return eBook;
-    }
 
     public File newDirectoryThere (String name)
     {
@@ -80,8 +70,8 @@ public class Book {
         text.add(line);
         linesCount++;
         if (linesCount >= linesLimit) {
-            File file = null;
-            FileWriter writer = null;
+            File file;
+            FileWriter writer;
             String p = root + File.separator + Long.toString(System.currentTimeMillis()) + "." + this.name;
             file = new File(p);
             try {
@@ -113,8 +103,8 @@ public class Book {
 
     public void finish ()
     {
-        File file = null;
-        FileWriter writer = null;
+        File file;
+        FileWriter writer;
         String p = root + File.separator + Long.toString(System.currentTimeMillis()) + "." + this.name;
         if (linesCount > 0) {
             file = new File(p);
@@ -147,8 +137,8 @@ public class Book {
 
     public void finish (String name)
     {
-        File file = null;
-        FileWriter writer = null;
+        File file;
+        FileWriter writer;
         String p = root + File.separator + name + "." + this.name;
         if (linesCount > 0) {
             file = new File(p);

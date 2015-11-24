@@ -29,7 +29,7 @@ public class PathIconPainter extends JComponent {
     }
 
 
-    public ImageIcon drawIcon (String location, String text)
+    public ImageIcon drawIcon (String location, String text, Color color)
     {
         String filePath = location + File.separator + "type_" + text + ".jpg";
         BufferedImage image = new BufferedImage(48, 16, BufferedImage.TYPE_INT_RGB);
@@ -38,7 +38,7 @@ public class PathIconPainter extends JComponent {
         g.setFont(new Font("TimesRoman", Font.ITALIC, 16));
         g.setBackground(Color.PINK);
         g.fillRect(0, 0, 48, 16);
-        g.setColor(Color.red);
+        g.setColor(color);
         g.drawString(text, 5, 16);
         g.finalize();
         File imageFile = new File(filePath);
@@ -52,7 +52,7 @@ public class PathIconPainter extends JComponent {
         cleanUpArchive.add(imageFile);
         return new ImageIcon(image);
     }
-    public ImageIcon drawIcon (Path location, String text)
+    public ImageIcon drawIcon (Path location, String text, Color color)
     {
         String filePath = location.toString() + File.separator + "type_" + text + ".jpg";
         BufferedImage image = new BufferedImage(text.length() * 12, 16, BufferedImage.TYPE_INT_RGB);
@@ -61,7 +61,7 @@ public class PathIconPainter extends JComponent {
         g.setFont(new Font("TimesRoman", Font.ITALIC, 16));
         g.setBackground(Color.PINK);
         g.fillRect(0, 0, text.length() * 12, 16);
-        g.setColor(Color.red);
+        g.setColor(color);
         g.drawString(text, 5, 16);
         g.finalize();
         File imageFile = new File(filePath);

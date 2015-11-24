@@ -136,7 +136,7 @@ public class PathWatcher {
                 }
                 w.removeSpacesFromValue();
                 location = hash.newDirectoryThere("extension_icons");
-                icons.addUserTypeIcon(iconPainter.drawIcon(location.toPath(), w.getValue()), w.getName());
+                icons.addUserTypeIcon(iconPainter.drawIcon(location.toPath(), w.getValue(), key.getLinkColor()), w.getName());
         }
             fireWatchEvents();
         }
@@ -521,50 +521,35 @@ public class PathWatcher {
         }
     }
 
-    /*
-    public void updateTree (JTree tree)
+    public void rebaseTree (JTree tree)
     {
-        DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
-        PathTreeNode newRoot = new PathTreeNode("A:/", icons.getRootIcon());
-        DefaultTreeModel newModel = new DefaultTreeModel(newRoot);
-        ArrayList<PathTreeNode> leafs = new ArrayList<>();
-        ArrayList<PathTreeNode> nodes = new ArrayList<>();
+        PathTreeNode newRoot = rebaseNodes((PathTreeNode) tree.getModel().getRoot());
+        tree.setModel(new DefaultTreeModel(newRoot));
+    }
 
-        PathTreeNode root = (PathTreeNode)model.getRoot();
-        if (root == null) {
-            return;
+    private PathTreeNode rebaseNodes (PathTreeNode root)
+    {
+        PathTreeNode newRoot = null;
+        if (root.getUserObject() == null) {
+            return root;
+        }
+
+        File file = new File(root.getUserObject().toString());
+        if (file.isDirectory() == true) {
+            newRoot = new PathTreeNode(root.toString(), root.getIcon());
+        } else {
+            newRoot = new PathTreeNode(root.toString(), icons.getTypeIcon(file));
         }
         if (root.isLeaf() == true) {
-            return;
-        }
-        nodes.add(root);
-        PathTreeNode temp;
-        while (nodes.isEmpty() == false) {
-            nodes.remove(0);
-            int childCount = root.getChildCount();
-            if (childCount == 0) {
-                continue;
-            }
-            for (int i = 0; i < childCount; i++) {
-                try {
-                    temp = (PathTreeNode) root.getChildAt(i);
-                } catch (ArrayIndexOutOfBoundsException exception) {
-                    break;
-                }
-                if (root.isLeaf() == true) {
-                    leafs.add(temp);
-                } else {
-                    nodes.add(temp);
-                }
-                if (temp.getUserObject().getClass() == Path.class) {
-                    Path path = (Path) temp.getUserObject();
-                    temp.setIcon(icons.getTypeIcon(path.toFile().getName()));
-                }
-                newRoot.add(temp);
+            return newRoot;
+        } else {
+            int count = root.getChildCount();
+            for (int i = 0; i < count; i++) {
+                newRoot.add(rebaseNodes((PathTreeNode) root.getChildAt(i)));
             }
         }
-        tree.setModel(newModel);
+        return newRoot;
     }
-    */
+
 
 }
