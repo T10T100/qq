@@ -13,19 +13,17 @@ public class PathKey {
     protected int matched;
     protected long matchedSize;
     protected int matchedToArgs;
+    colorPalette palette;
     Color linkColor;
 
     public PathKey(Word key)
     {
+        palette = new colorPalette();
         ArrayList<String> array = key.getArrayFromValueAndSetValueAsFirst('$', '$');
         if (array.isEmpty() == true) {
-            linkColor = Color.red;
+            linkColor = Color.black;
         } else {
-            if (array.get(0).contains("black") == true) {
-                this.linkColor = Color.black;
-            } else {
-                linkColor = Color.red;
-            }
+            linkColor = palette.getColorByName(array.get(0));
         }
         this.key = key;
         this.matched = 0;

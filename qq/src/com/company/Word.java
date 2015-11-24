@@ -246,6 +246,8 @@ public class Word {
         ArrayList<String> array = this.getArrayFromValue(begin, end);
         if (array.isEmpty() == false) {
             this.name = array.remove(0);
+        } else {
+            name = "[name]";
         }
         return array;
     }
@@ -332,6 +334,8 @@ public class Word {
         ArrayList<String> array = this.getArrayFromValue(delimiter);
         if (array.isEmpty() == false) {
             this.name = array.remove(0);
+        } else {
+            this.name = "[name]";
         }
         return array;
     }

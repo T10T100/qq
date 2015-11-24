@@ -532,29 +532,6 @@ public class SetupForm extends JFrame {
                 }
             }
         });
-        keyTexArea.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                if (e.getSource() == keyTexArea) {
-                    keyTexArea.selectAll();
-                    try {
-                        System.out.println(keyTexArea.getText(e.getX(), e.getY()));
-                    } catch (BadLocationException exception) {
-
-                    }
-                    setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                if (e.getSource() == keyTexArea) {
-                    setCursor(Cursor.getDefaultCursor());
-                }
-            }
-        });
         searchField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -681,8 +658,10 @@ public class SetupForm extends JFrame {
             JOptionPane.showMessageDialog(this, "Cannot read line !");
             return;
         }
-        keyTexArea.setText(templateInput);
-        keyParser.setUp(pathComparator, keyTexArea.getText());
+        Word clean = new Word(templateInput);
+        clean.removeSpacesFromWord();
+        keyTexArea.setText(clean.getValue());
+        keyParser.setUp(pathComparator, clean.getValue());
         Word w;
         String searchArgs = "";
         for (PathKey key : pathComparator.getKeys()) {
@@ -692,7 +671,6 @@ public class SetupForm extends JFrame {
             }
             searchArgs += w.getValue() + ",";
         }
-        searchArgs += ",";
         searchField.setText(searchArgs);
         searchProcess(outputTextArea, searchField);
         rebaseAll();
@@ -705,6 +683,7 @@ public class SetupForm extends JFrame {
     private void rebaseAll ()
     {
         pathWatcher.rebaseTree(tree1);
+        pathWatcher.rebaseTree(treeToPick);
     }
 
 }

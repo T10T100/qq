@@ -1,5 +1,7 @@
 package com.company;
 
+import sun.font.FontFamily;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -58,7 +60,8 @@ public class PathIconPainter extends JComponent {
         BufferedImage image = new BufferedImage(text.length() * 12, 16, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
 
-        g.setFont(new Font("TimesRoman", Font.ITALIC, 16));
+
+        g.setFont(new Font("Bebop", Font.BOLD, 16));
         g.setBackground(Color.PINK);
         g.fillRect(0, 0, text.length() * 12, 16);
         g.setColor(color);

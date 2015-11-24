@@ -517,7 +517,8 @@ public class PathWatcher {
             return;
         }
         for (int i = 0; i < count; i++) {
-            model.removeNodeFromParent( (MutableTreeNode)root.getChildAt(i) );
+            MutableTreeNode n =  (MutableTreeNode)root.getChildAt(i);
+            model.removeNodeFromParent(n);
         }
     }
 
