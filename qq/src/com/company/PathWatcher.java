@@ -532,11 +532,11 @@ public class PathWatcher {
 
     public void rebaseTree (JTree tree)
     {
-        PathTreeNode newRoot = rebaseNodes((PathTreeNode) tree.getModel().getRoot());
+        PathTreeNode newRoot = rebaseNodes((PathTreeNode) tree.getModel().getRoot(), true);
         tree.setModel(new DefaultTreeModel(newRoot));
     }
 
-    private PathTreeNode rebaseNodes (PathTreeNode root)
+    private PathTreeNode rebaseNodes (PathTreeNode root, boolean isRoot)
     {
         PathTreeNode newRoot = null;
         if (root.getUserObject() == null) {
@@ -547,14 +547,18 @@ public class PathWatcher {
         if (file.isDirectory() == true) {
             newRoot = new PathTreeNode(root.toString(), root.getIcon());
         } else {
-            newRoot = new PathTreeNode(root.toString(), icons.getTypeIcon(file));
+            if (isRoot == false) {
+                newRoot = new PathTreeNode(root.toString(), icons.getTypeIcon(file));
+            } else {
+                newRoot = new PathTreeNode(root.toString(), icons.getRootIcon());
+            }
         }
         if (root.isLeaf() == true) {
             return newRoot;
         } else {
             int count = root.getChildCount();
             for (int i = 0; i < count; i++) {
-                newRoot.add(rebaseNodes((PathTreeNode) root.getChildAt(i)));
+                newRoot.add(rebaseNodes((PathTreeNode) root.getChildAt(i), false));
             }
         }
         return newRoot;
