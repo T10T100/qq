@@ -308,6 +308,9 @@ public class PathWatcher {
     public void removeSelected (JTree tree)
     {
         PathTreeNode selected = (PathTreeNode)tree.getLastSelectedPathComponent();
+        if (selected == null) {
+            return;
+        }
         remove(tree, selected);
     }
 
@@ -517,7 +520,12 @@ public class PathWatcher {
             return;
         }
         for (int i = 0; i < count; i++) {
-            MutableTreeNode n =  (MutableTreeNode)root.getChildAt(i);
+            MutableTreeNode n = null;
+            try {
+                n = (MutableTreeNode) root.getChildAt(i);
+            } catch (ArrayIndexOutOfBoundsException exception) {
+                continue;
+            }
             model.removeNodeFromParent(n);
         }
     }

@@ -432,6 +432,84 @@ public class Word {
         return this.getIntegersFrom(this.value.toCharArray());
     }
 
+    private ArrayList<String> collectCharacters (char[] input, char delimiter)
+    {
+        ArrayList<String> array = new ArrayList<>();
+
+        int length = input.length;
+        char begin = ' ';
+        char end = ' ';
+        String[] inserts = {new String(), new String()};
+        int switcher = 0;
+        int offset = 1;
+        boolean ready = false;
+        for (int i = 1; i < length && i - offset < length; i++) {
+            if (input[i] == delimiter) {
+                if (offset == -1) {
+                    break;
+                }
+                begin = input[i - 1];
+                if (i + 1 > length) {
+                    break;
+                }
+                ready = true;
+                end = input[i + 1];
+                switcher ^= 1;
+                offset = -1;
+            } else {
+                inserts[switcher] += input[i - offset];
+            }
+        }
+        if (ready == false) {
+            return array;
+        }
+        int startIndex = (int)begin;
+        int endIndex = (int)end;
+        String insert0 = inserts[0].isEmpty() == true ? "" : inserts[0];
+        String insert1 = inserts[1].isEmpty() == true ? "" : inserts[1];
+        if (startIndex <= endIndex) {
+            for (int i = startIndex; i <= endIndex; i++) {
+                array.add(insert0 + Character.toString((char)i) + insert1);
+            }
+        }
+        return array;
+    }
+
+    public ArrayList<String> collectCharactersFromName (char delimiter)
+    {
+        return collectCharacters(this.name.toCharArray(), delimiter);
+    }
+    public ArrayList<String> collectCharactersFromValue (char delimiter)
+    {
+        return collectCharacters(this.value.toCharArray(), delimiter);
+    }
+
+    private ArrayList<String> collectEnum (char[] input, char delimiter)
+    {
+        ArrayList<String> array = new ArrayList<>();
+        Word word = new Word(name, '<');
+        if (word.getName().isEmpty() == true || word.getValue().isEmpty() == true) {
+            return array;
+        }
+        String[] g = word.removeAllButDigitsFromWord();
+        String insert0 = g[0].isEmpty() == true ? "" : g[0];
+        String insert1 = g[1].isEmpty() == true ? "" : g[1];
+        int bottomValue = Integer.parseInt(word.getName());
+        int topValue = Integer.parseInt(word.getValue());
+        for (int i = bottomValue; i <= topValue; i++) {
+            array.add(insert0 + Integer.toString(i) + insert1);
+        }
+        return array;
+    }
+    public ArrayList<String> collectEnumFromName (char delimiter)
+    {
+        return collectEnum(this.name.toCharArray(), delimiter);
+    }
+    public ArrayList<String> collectEnumFromValue (char delimiter)
+    {
+        return collectEnum(this.value.toCharArray(), delimiter);
+    }
+
     public void removeSpacesFromName ()
     {
         char[] array = this.name.toCharArray();
@@ -460,28 +538,42 @@ public class Word {
         this.removeSpacesFromValue();
     }
 
-    public String removeAllButDigits (char[] input)
+    public String[] removeAllButDigits (char[] input)
     {
-        String output = "";
+        String[] output = {new String(), new String()};
         for (int i = 0; i <  input.length; i++) {
             if (Character.isDigit(input[i]) == true) {
-                output += input[i];
+                output[1] += input[i];
+            } else {
+                output[0] += input[i];
             }
         }
         return output;
     }
-    public void removeAllButDigitsFromName ()
+    public String removeAllButDigitsFromName ()
     {
-        this.name = this.removeAllButDigits(this.name.toCharArray());
+        String[] g = {new String(), new String()};
+        g = this.removeAllButDigits(this.name.toCharArray());
+        this.name = g[1];
+        return g[0];
     }
-    public void removeAllButDigitsFromValue ()
+    public String removeAllButDigitsFromValue ()
     {
-        this.value = this.removeAllButDigits(this.value.toCharArray());
+        String[] g = {new String(), new String()};
+        g = this.removeAllButDigits(this.value.toCharArray());
+        this.value = g[1];
+        return g[0];
     }
-    public void removeAllButDigitsFromWord ()
+    public String[] removeAllButDigitsFromWord ()
     {
-        this.name = this.removeAllButDigits(this.name.toCharArray());
-        this.value = this.removeAllButDigits(this.value.toCharArray());
+        String[] g;
+        String[] v;
+        g = this.removeAllButDigits(this.name.toCharArray());
+        this.name = g[1];
+        v = this.removeAllButDigits(this.value.toCharArray());
+        this.value = v[1];
+        g[1] = v[0];
+        return g;
     }
 
 

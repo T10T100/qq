@@ -44,33 +44,17 @@ public class KeyParser {
                 keysToRemove.add(key);
                 continue;
             }
-            String name = key.getName();
-            if (name.contains("-") == true) {
+            String value = key.getValue();
+            ArrayList<String> namesArray = key.collectCharactersFromName('-');
+            if (namesArray.isEmpty() == false) {
                 keysToRemove.add(key);
-                int indexOf = name.indexOf("-");
-                if (indexOf >= 1 && name.length() >= 3) {
-                    insert = name.substring(3, name.length());
-                    char start = name.charAt(indexOf - 1);
-                    char end = name.charAt(indexOf + 1);
-                    int startIndex = (int)start;
-                    int endIndex = (int)end;
-                    if (startIndex <= endIndex) {
-                        for (int i = startIndex; i <= endIndex; i++) {
-                            keysToinsert.add(new Word(Character.toString((char)i) + insert, insert));
-                        }
-                    }
+                for (String newName : namesArray) {
+                    keysToinsert.add(new Word(newName, value));
                 }
-            } else if (name.contains("<")) {
+            } else if ((namesArray = key.collectEnumFromName('<')).isEmpty() == false) {
                 keysToRemove.add(key);
-                Word word = new Word(name, '<');
-                if (word.getName().isEmpty() == true || word.getValue().isEmpty() == true) {
-                    continue;
-                }
-                word.removeAllButDigitsFromWord();
-                int bottomValue = Integer.parseInt(word.getName());
-                int topValue = Integer.parseInt(word.getValue());
-                for (int i = bottomValue; i <= topValue; i++) {
-                    keysToinsert.add(new Word(Integer.toString(i), ""));
+                for (String newName : namesArray) {
+                    keysToinsert.add(new Word(newName, value));
                 }
             }
         }
@@ -92,7 +76,7 @@ public class KeyParser {
         ArrayList<Word> words = new ArrayList<>();
 
         for (String name : array) {
-            words.add(new Word(name, ':'));
+            words.add(new Word(name, '='));
         }
         words.add(0, new Word(garbage));
         return words;
@@ -108,10 +92,11 @@ public class KeyParser {
         ArrayList<Word> words = new ArrayList<>();
 
         for (String name : array) {
-            words.add(new Word(name, ':'));
+            words.add(new Word(name, '='));
         }
         words.add(0, new Word(garbage));
         return words;
     }
+
 
 }

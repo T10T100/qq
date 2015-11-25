@@ -169,45 +169,10 @@ public class SetupForm extends JFrame {
             if (text.isEmpty() == false) {
 
                 keyMarks.add(new TextMark(keyLastPosition, keyLastPosition + text.length() + 1, keyHighColor));
-                Word word;
-                if (text.contains("<")) {
-                    word = new Word(text, '<');
-                    if (word.getValue().length() == 0 || word.getName().length() == 0) {
-                        continue;
-                    }
-                    word.removeAllButDigitsFromWord();
-                    long bottomValue = Long.parseLong(word.getName());
-                    long topValue = Long.parseLong(word.getValue());
-                    Word inputNumbers = new Word(input);
-                    for (Word.BoundedNumber num : inputNumbers.getIntegersFromValue()) {
-                        if (bottomValue < num.getNumber() && num.getNumber() < topValue) {
-                            matchedMarks.add(new TextMark(num.getStartIndex(), num.getEndIndex(), keyHighColor));
-                        }
-                    }
-                } else if (text.contains("-") == true) {
-                    String insert = "";
-                    String test = "";
-                    int indexOf = text.indexOf("-");
-                    if (indexOf >= 1 && text.length() >= 3) {
-                        insert = text.substring(3, text.length());
-                        int l = insert.length() + 1;
-                        int startIndex = (int)text.charAt(indexOf - 1);
-                        int endIndex = (int)text.charAt(indexOf + 1);
-                        if (startIndex <= endIndex) {
-                            for (int i = startIndex; i <= endIndex; i++) {
-                                test = Character.toString((char)i) + insert;
-                                for (int index = input.indexOf(test); index >= 0; index = input.indexOf(test, index + 1)) {
-                                    matchedMarks.add(new TextMark(index, index + l, keyHighColor));
-                                }
-                            }
-                        }
-                    }
-                }else {
-                    for (int index = input.indexOf(text); index >= 0; index = input.indexOf(text, index + 1)) {
-                        matchedMarks.add(new TextMark(index, index + text.length(), keyHighColor));
-                    }
+                Word word = new Word(text);
+                for (int index = input.indexOf(text); index >= 0; index = input.indexOf(text, index + 1)) {
+                    matchedMarks.add(new TextMark(index, index + text.length(), keyHighColor));
                 }
-
                 keyLastPosition += text.length() + 1;
             }
         }
