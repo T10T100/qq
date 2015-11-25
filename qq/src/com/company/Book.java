@@ -25,6 +25,9 @@ public class Book {
     private int linesCount;
     private String charsetName;
 
+    private Vector<BookEventListener> listeners;
+
+
 
     public Book(File location, String bookName)
     {
@@ -35,6 +38,36 @@ public class Book {
         this.name = bookName;
         this.root = location.toPath();
         this.linesCount = 0;
+        listeners = new Vector<>();
+    }
+
+    public void addEventListener (BookEventListener listener)
+    {
+        if (listeners.contains(listener)) {
+            return;
+        }
+        listeners.add(listener);
+    }
+
+    public void removeListener (BookEventListener listener)
+    {
+        listeners.remove(listener);
+    }
+    public void removeAlllisteners ()
+    {
+        listeners.removeAll(listeners);
+    }
+
+    private void fireEvents (int cause, String causeName)
+    {
+        Vector<BookEventListener> L = new Vector();
+        synchronized (this) {
+            L = (Vector)listeners.clone();
+        }
+        BookEvent event = new BookEvent(this, cause, causeName);
+        for (BookEventListener l : L) {
+            l.eventPerformed(event);
+        }
     }
 
     public Book newBookWithin (String bookName)
@@ -77,6 +110,7 @@ public class Book {
             try {
                 file.createNewFile();
             } catch (IOException exception) {
+                fireEvents(0, "Cannot create a file there !");
                 return;
             }
             try {
@@ -86,14 +120,17 @@ public class Book {
                         try {
                             writer.write("\r\n"  + text.remove(0) + " \r\n");
                         } catch (IOException exception) {
+                            fireEvents(0, "Cannot write to file !");
                             return;
                         }
                     }
                     writer.close();
                 } catch (IOException exception) {
+                    fireEvents(0, "Cannot open file to write!");
                     return;
                 }
             } catch (NullPointerException exception) {
+                fireEvents(0, "Sompething points to 0");
                 return;
             }
             linesCount = 0;
@@ -112,6 +149,7 @@ public class Book {
             try {
                 file.createNewFile();
             } catch (IOException exception) {
+                fireEvents(0, "Cannot create a file there !");
                 return;
             }
             try {
@@ -121,14 +159,17 @@ public class Book {
                         try {
                             writer.append("\r\n" + text.remove(0) + " \r\n");
                         } catch (IOException exception) {
+                            fireEvents(0, "Cannot write to file !");
                             return;
                         }
                     }
                     writer.close();
                 } catch (IOException exception) {
+                    fireEvents(0, "Cannot open file to write!");
                     return;
                 }
             } catch (NullPointerException exception) {
+                fireEvents(0, "Sompething points to 0");
                 return;
             }
             linesCount = 0;
@@ -175,7 +216,7 @@ public class Book {
             try {
                 Files.deleteIfExists(p);
             } catch (IOException exception) {
-
+                fireEvents(0, "File \"" + (p.toFile()).getName() +  "\" not existing !");
             }
         }
         index.removeAll(index);
@@ -198,6 +239,7 @@ public class Book {
         for (Path p : index) {
             try {
                 Files.deleteIfExists(p);
+                fireEvents(0, "File \"" + (p.toFile()).getName() +  "\" not existing !");
             } catch (IOException exception) {
 
             }
@@ -208,7 +250,7 @@ public class Book {
             try {
                 Files.deleteIfExists(b.root);
             } catch (IOException exception) {
-
+                fireEvents(0, "File \"" + (b.root.toFile()).getName() +  "\" not existing !");
             }
         }
         childs.removeAll(childs);
@@ -216,7 +258,7 @@ public class Book {
             try {
                 Files.deleteIfExists(folder.toPath());
             } catch (IOException exception) {
-
+                fireEvents(0, "Folder \"" + folder.getName() +  "\" not existing !");
             }
         }
         folders.removeAll(folders);

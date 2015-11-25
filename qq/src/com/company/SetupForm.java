@@ -237,7 +237,12 @@ public class SetupForm extends JFrame {
 
         logObject.setCharsetName("ISO-8859-1");
         hashObject.setCharsetName("ISO-8859-1");
-
+        hashObject.addEventListener(new BookEventListener() {
+            @Override
+            public void eventPerformed(BookEvent o) {
+                JOptionPane.showMessageDialog(SetupForm.this, o.getCauseName());
+            }
+        });
 
     }
 
@@ -319,6 +324,7 @@ public class SetupForm extends JFrame {
 
         pathComparator = new PathComparator();
 
+
     }
 
     private void initTreeOfRoots () {
@@ -395,10 +401,8 @@ public class SetupForm extends JFrame {
                                 tree1.setModel(new DefaultTreeModel(pathWatcher.makeTreeByName(workingRoot.toString())));
                             } else {
                                 PathTreeNode node = (PathTreeNode) tree1.getLastSelectedPathComponent();
-                                if (node != null) {
-                                    if ((node.getUserObject()).getClass() != PathTreeNode.class) {
-                                        showPathInfo(new File(node.getUserObject().toString()));
-                                    }
+                                if (node != null){
+                                    showPathInfo(new File(node.getUserObject().toString()));
                                 }
                             }
                         }
