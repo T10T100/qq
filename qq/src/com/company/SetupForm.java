@@ -376,6 +376,8 @@ public class SetupForm extends JFrame {
                 }
             }
         });
+
+
         treeToPick.addTreeSelectionListener(new TreeSelectionListener() {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
@@ -457,8 +459,8 @@ public class SetupForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 disableWatchBlock();
+                rebaseAll();
                 pathWatcher.makeHash(tree1, pathComparator, logObject, hashObject);
-                rebaseAll();;
             }
         });
         buttonToBreak.setEnabled(false);
@@ -567,8 +569,8 @@ public class SetupForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == checkBoxToUseDefaultIcons) {
-                    icons.setSkipDefaults(! checkBoxToUseDefaultIcons.isSelected());
                     rebaseAll();
+                    icons.setSkipDefaults(! checkBoxToUseDefaultIcons.isSelected());
                 }
             }
         });
@@ -625,8 +627,10 @@ public class SetupForm extends JFrame {
 
         } catch (UncheckedIOException exception) {
             JOptionPane.showMessageDialog(this, "Cannot read line !");
+            output.close();
             return;
         }
+        output.close();
         Word clean = new Word(templateInput);
         clean.removeSpacesFromWord();
         keyTexArea.setText(clean.getValue());
@@ -649,6 +653,7 @@ public class SetupForm extends JFrame {
     {
         templateInput += from + "\n";
     }
+
     private void rebaseAll ()
     {
         pathWatcher.rebaseTree(tree1);
